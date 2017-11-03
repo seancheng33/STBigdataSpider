@@ -3,8 +3,6 @@ import smtplib, socks, logging,time
 from email.header import Header
 from email.mime.text import MIMEText
 
-
-
 class SendMail():
     def __init__(self, mail_host, mail_user, mail_pass, sender, to_receivers, cc_receivers,mail_content):
         logging.basicConfig(filename=time.strftime('%Y%m%d', time.localtime(time.time())) + '.log', level=logging.DEBUG)
@@ -51,7 +49,7 @@ class SendMail():
             smtpObj.login(self.mail_user, self.mail_pass)
             smtpObj.sendmail(self.sender, self.to_receivers + self.cc_receivers, self.message.as_string())
             smtpObj.quit()  # 关闭连接
-            logging.info("邮件发送成功")
+            logging.info(time.strftime('%Y%m%d-%H:%M:%S', time.localtime(time.time())) + "  -->> 邮件发送成功")
         except smtplib.SMTPException:
-            logging.info("Error: 无法发送邮件")
+            logging.warning(time.strftime('%Y%m%d-%H:%M:%S', time.localtime(time.time())) + " -->> Error: 无法发送邮件")
 
