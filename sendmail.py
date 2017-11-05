@@ -1,4 +1,4 @@
-'''测试发送邮件功能  '''
+'''发送邮件功能模块  '''
 import smtplib, socks, logging,time
 from email.header import Header
 from email.mime.text import MIMEText
@@ -33,7 +33,6 @@ class SendMail():
         self.message['From'] = Header(self.sender, 'utf-8')  # 这一项显示为发件人的内容
         # message['To'] = Header(str(receivers), 'utf-8')  # 这一项显示为收件人的内容
         self.message['To'] = ','.join(self.to_receivers)
-        # ccaddr =['','']抄送名单
         self.message['Cc'] = ','.join(self.cc_receivers)  # 这一项显示为抄送收件人的内容，下面的发送记得将抄送名单也加进去
         subject = '测试python邮件发送功能'
         self.message['Subject'] = Header(subject, 'utf-8')

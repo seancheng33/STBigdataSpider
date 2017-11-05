@@ -1,5 +1,5 @@
 ﻿自动化脚本获取CDH网站上主机运行状态并将其发送邮件到指定邮箱
-
+本版本为window版
 
 开发运行环境：
 python-3.6.2
@@ -19,13 +19,13 @@ pip install -r requests.txt
 config.ini配置说明，请按实际部署的情况修改config.ini中的以下内容
 
 [spider]#爬取数据功能的配置
-url = #需要打开的网址，例：http://10.245.254.139:7180/cmf/home
+url = #需要打开的网址，例：http://127.0.0.1:7180/cmf/home
 username = #登录的用户名，例：admin
-password = #登录的密码，例：admin
+password = #登录的密码，例：password
 checkstatus = #需要检查的状态的定义字段，具体见下面的列表，建议将下面的''内的内容直接复制过去 例：cm-icon-status-bad-health
 [proxy] #邮件功能的网络代理的配置
 url = #代理服务器的地址，例：cmproxy.gmcc.net 或 127.0.0.1 可以是域名或IP
-port = #代理服务器的端口，例：8081 或 8080
+port = #代理服务器的端口，例：80 或 8080
 
 [mail] #邮件发送的配置
 host = #邮件smtp服务器，测试了139邮箱，可以发送，例：smtp.139.com
