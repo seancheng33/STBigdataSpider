@@ -4,12 +4,21 @@ from bs4 import BeautifulSoup
 
 from sendmail import SendMail
 
-logging.basicConfig(filename='logs/'+time.strftime('%Y%m%d', time.localtime(time.time()))+'.log', level=logging.DEBUG)
+logging.basicConfig(filename='logs/'+time.strftime('%Y%m%d', time.localtime(time.time()))+'.log',
+                    format='%(asctime)s %(filename)s[line:%(lineno)d] %(levelname)s %(message)s',
+                    datefmt='%a, %d %b %Y %H:%M:%S',
+                    level=logging.DEBUG)
 
 def openurl_and_login(url,username,password):
+
+
+    # cap = webdriver.DesiredCapabilities.PHANTOMJS
+    # cap["phantomjs.page.settings.resourceTimeout"] = 100
+    # cap["phantomjs.page.settings.userAgent"] = (
+    # "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/61.0.3163.100 Safari/537.36")
+    # browser = webdriver.PhantomJS(executable_path='phantomjs.exe',desired_capabilities=cap)
+    # 先行测试用，最终须修改成无GUI的PhantomJS浏览器,暂时phantomJS的网络不能通过代理
     browser = webdriver.Chrome(executable_path='chromedriver.exe')
-    # browser = webdriver.PhantomJS(executable_path='phantomjs.exe')
-    # 先行测试用，最终须修改成无GUI的PhantomJS浏览器
 
     browser.get(url)
     logging.info(time.strftime('%Y%m%d-%H:%M:%S', time.localtime(time.time())) + ' -->> 打开网址成功。')
@@ -128,7 +137,7 @@ try:
     browser = openurl_and_login(url,username,password)
 except selenium.common.exceptions:
     browser.quit()
-    logging.warning(time.strftime('%Y%m%d-%H:%M:%S', time.localtime(time.time())) + ' -->> Error: 无法获取页面元素，退出浏览器，重新打开脚本')
+    logging.error(time.strftime('%Y%m%d-%H:%M:%S', time.localtime(time.time())) + ' -->> Error: 无法获取页面元素，退出浏览器，重新打开脚本')
     time.sleep(2)
     browser = openurl_and_login(url, username, password)
 
