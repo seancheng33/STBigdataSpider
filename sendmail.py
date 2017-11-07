@@ -14,7 +14,7 @@ class SendMail():
         self.cc_receivers = cc_receivers
 
         # 邮件正文内容
-        self.mail_content = '<p>以下为运行状态良好的各主机状态</p>' + mail_content + \
+        self.mail_content = '<p>以下为运行状态不良的各主机状态</p>' + mail_content + \
                     '<div style="margin: 10.0px;position: static;">' \
                     '<span style="color: rgb(0,0,0);font-family: Verdana , 微软雅黑 , 宋体 , sans-serif;font-size: 10.0pt;">祝安康<br></span>' \
                     '<span style="color: rgb(0,0,0);font-family: Verdana , 微软雅黑 , 宋体 , sans-serif;font-size: 10.0pt;">业务支持中心-信息管理室</span>' \
