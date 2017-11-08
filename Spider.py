@@ -19,17 +19,12 @@ url = config.get('spider', 'url')
 username = config.get('spider', 'username')
 password = config.get('spider', 'password')
 
+browser = webdriver.Chrome(executable_path='chromedriver.exe')
 
-try:
-    browser = Collection().openurl_and_login(url, username, password)
-except selenium.common.exceptions.NoSuchElementException:
-    browser.quit()
-    logging.error(time.strftime('%Y%m%d-%H:%M:%S', time.localtime(time.time())) + ' -->> Error: 无法获取页面元素，退出浏览器，重新打开脚本')
-    time.sleep(2)
-    browser = Collection().openurl_and_login(url, username, password)
-
-statusDict = Collection().getHomeStatus(browser)
-statusList = Collection().statusDetials(statusDict, browser, config.get('spider', 'checkstatus'))
+spiderbrowser = Collection(browser)
+spiderbrowser.openurl_and_login(url, username, password)
+statusDict = spiderbrowser.getHomeStatus()
+statusList = spiderbrowser.statusDetials(statusDict, config.get('spider', 'checkstatus'))
 # 用有GUI的浏览器时，才需要用到这个休眠，测试时可以看退出前是否是已经浏览到正确的页面
 time.sleep(1)
 browser.quit()
@@ -45,7 +40,7 @@ cc_receivers = config.get('mail', 'cc_receivers').split(',')  # 抄送名单，�
 proxy_url = config.get('proxy', 'url')
 proxy_port = int(config.get('proxy', 'port'))  # 取出来的值是字符串，记得转成整数类型，不然会报错
 
-sendMail = SendMail(mail_host, mail_user, mail_pass, sender, to_receivers, cc_receivers, Collection().status_table(statusList))
+sendMail = SendMail(mail_host, mail_user, mail_pass, sender, to_receivers, cc_receivers, spiderbrowser.status_table(statusList))
 sendMail.send(proxy_url, proxy_port)
 
 sys.exit(0)

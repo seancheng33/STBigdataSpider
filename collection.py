@@ -1,14 +1,15 @@
 import logging
 import time
 
+import selenium
 from bs4 import BeautifulSoup
 from selenium import webdriver
 
 
 class Collection():
 
-    # def __init__(self,browser):
-    #     self.browser = browser
+    def __init__(self,browser):
+         self.browser = browser
 
     def openurl_and_login(self,url, username, password):
         # cap = webdriver.DesiredCapabilities.PHANTOMJS
@@ -17,24 +18,32 @@ class Collection():
         # "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/61.0.3163.100 Safari/537.36")
         # browser = webdriver.PhantomJS(executable_path='phantomjs.exe',desired_capabilities=cap)
         # 先行测试用，最终须修改成无GUI的PhantomJS浏览器,暂时phantomJS的网络不能通过代理
-        browser = webdriver.Chrome(executable_path='chromedriver.exe')
+        #browser = webdriver.Chrome(executable_path='chromedriver.exe')
 
-        browser.get(url)
+        self.browser.get(url)
         logging.info(time.strftime('%Y%m%d-%H:%M:%S', time.localtime(time.time())) + ' -->> 打开网址成功。')
 
-        # 登录到系统中
-        browser.find_element_by_id("username").send_keys(username)
-        browser.find_element_by_id("password").send_keys(password)
-        browser.find_element_by_name("submit").click()
+        try:
+            self.login_to(username, password)
+        except selenium.common.exceptions.NoSuchElementException:
+            #如果报错说没有找到页面元素，刷新浏览器后再重新执行登陆
+            self.browser.refresh()
+            self.login_to(username, password)
+
         logging.info(time.strftime('%Y%m%d-%H:%M:%S', time.localtime(time.time())) + ' -->> 登陆成功。')
         # 停3秒，让页面可以读取数据完整
         time.sleep(3)
+        #return browser
 
-        return browser
+    def login_to(self,username, password):
+        # 登录到系统中
+        self.browser.find_element_by_id("username").send_keys(username)
+        self.browser.find_element_by_id("password").send_keys(password)
+        self.browser.find_element_by_name("submit").click()
 
-    def getHomeStatus(self,browser):
+    def getHomeStatus(self):
         # 获取状态的图标和项目名
-        statuspane = browser.find_elements_by_class_name("service-status-and-name")
+        statuspane = self.browser.find_elements_by_class_name("service-status-and-name")
 
         # 用一个list保存各个状态
         statusDict = []
@@ -55,7 +64,7 @@ class Collection():
         return statusDict[:-1]
 
     # 定义查询每页的详情
-    def statusDetials(self,statusDict, browser, checkstatus):
+    def statusDetials(self,statusDict, checkstatus):
         statList = {}
         # statusDict操作这个list里面的字典。得到各项的状态，再做进一步的操作。
         for status in statusDict:
@@ -63,18 +72,18 @@ class Collection():
             # 红色是cm-icon-status-bad-health，绿色是cm-icon-status-good-health，黄色是cm-icon-status-concerning-health
             if status['status'] == checkstatus:
                 # print('Good Status!')
-                browser.get(status['link'])
+                self.browser.get(status['link'])
                 logging.info(
                     time.strftime('%Y%m%d-%H:%M:%S', time.localtime(time.time())) + ' -->> 打开' + status[
                         'name'] + '页面成功')
-                browser.find_element_by_link_text('实例').click()
+                self.browser.find_element_by_link_text('实例').click()
                 logging.info(
                     time.strftime('%Y%m%d-%H:%M:%S', time.localtime(time.time())) + ' -->> 打开' + status[
                         'name'] + '实例页面成功')
                 time.sleep(3)
 
                 # 整行tr获取，避免出现数据混乱的情况。数据完整性比按列获取要好
-                trs = browser.find_elements_by_xpath(
+                trs = self.browser.find_elements_by_xpath(
                     '/ html / body / div[7] / form / div / div[2] / div[4] / table / tbody / tr')
 
                 # 用来存指定状态的字典的数组
@@ -126,7 +135,7 @@ class Collection():
         return status[statustype]
 
     def status_table(self,text):
-        # 组合状态的数据，形成一份table的表格形式
+        # 组合状态的数据，形成一份table的表格形式，将插入在邮件的正文中
         table_text = text
         html_table = '<table border="1"><tr align="center"><td>事件类型</td><td>运行状态</td><td>角色类型</td><td>主机名</td></tr>'
 
