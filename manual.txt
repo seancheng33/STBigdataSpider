@@ -23,7 +23,7 @@ url = #需要打开的网址，例：http://127.0.0.1:7180/cmf/home
 username = #登录的用户名，例：admin 或 root
 password = #登录的密码，例：password 或 123456789
 checkstatus = #需要检查的状态的定义字段，具体见下面的列表，建议将下面的''内的内容直接复制过去 例：cm-icon-status-bad-health
-[proxy] #邮件功能的网络代理的配置
+[proxy] #邮件功能的网络代理配置，如果这两项留空，即是不使用网络代理，网络是直接连接公网
 url = #代理服务器的地址，例：proxy.domain.com 或 127.0.0.1 可以是域名或IP
 port = #代理服务器的端口，例：8081 或 8080
 

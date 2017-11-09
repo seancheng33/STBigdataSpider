@@ -1,7 +1,5 @@
-import time, sys, configparser, selenium, logging
+import time, sys, configparser, logging
 from selenium import webdriver
-from bs4 import BeautifulSoup
-
 from collection import Collection
 from sendmail import SendMail
 
@@ -19,18 +17,27 @@ url = config.get('spider', 'url')
 username = config.get('spider', 'username')
 password = config.get('spider', 'password')
 
+# cap = webdriver.DesiredCapabilities.PHANTOMJS
+# cap["phantomjs.page.settings.resourceTimeout"] = 100
+# cap["phantomjs.page.settings.userAgent"] = (
+# "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/61.0.3163.100 Safari/537.36")
+# browser = webdriver.PhantomJS(executable_path='phantomjs.exe',desired_capabilities=cap)
+# 先行测试用，最终须修改成无GUI的PhantomJS浏览器,暂时phantomJS的网络不能通过代理
+# browser = webdriver.Chrome(executable_path='chromedriver.exe')
 browser = webdriver.Chrome(executable_path='chromedriver.exe')
+# browser = webdriver.PhantomJS(executable_path='phantomjs.exe')
 
 spiderbrowser = Collection(browser)
 spiderbrowser.openurl_and_login(url, username, password)
 statusDict = spiderbrowser.getHomeStatus()
 statusList = spiderbrowser.statusDetials(statusDict, config.get('spider', 'checkstatus'))
+mail_statustable = spiderbrowser.status_table(statusList)
 # 用有GUI的浏览器时，才需要用到这个休眠，测试时可以看退出前是否是已经浏览到正确的页面
 time.sleep(1)
 browser.quit()
 logging.info(time.strftime('%Y%m%d-%H:%M:%S', time.localtime(time.time())) + ' -->> 退出浏览器，结束脚本')
 
-
+# 读取发送邮件的各项配置
 mail_host = config.get('mail', 'mail_host')  # 服务器
 mail_user = config.get('mail', 'mail_name')  # 用户名
 mail_pass = config.get('mail', 'mail_password')  # 密码
@@ -40,7 +47,7 @@ cc_receivers = config.get('mail', 'cc_receivers').split(',')  # 抄送名单，�
 proxy_url = config.get('proxy', 'url')
 proxy_port = int(config.get('proxy', 'port'))  # 取出来的值是字符串，记得转成整数类型，不然会报错
 
-sendMail = SendMail(mail_host, mail_user, mail_pass, sender, to_receivers, cc_receivers, spiderbrowser.status_table(statusList))
+sendMail = SendMail(mail_host, mail_user, mail_pass, sender, to_receivers, cc_receivers, mail_statustable)
 sendMail.send(proxy_url, proxy_port)
 
 sys.exit(0)

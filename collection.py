@@ -7,18 +7,10 @@ from selenium import webdriver
 
 
 class Collection():
+    def __init__(self, browser):
+        self.browser = browser
 
-    def __init__(self,browser):
-         self.browser = browser
-
-    def openurl_and_login(self,url, username, password):
-        # cap = webdriver.DesiredCapabilities.PHANTOMJS
-        # cap["phantomjs.page.settings.resourceTimeout"] = 100
-        # cap["phantomjs.page.settings.userAgent"] = (
-        # "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/61.0.3163.100 Safari/537.36")
-        # browser = webdriver.PhantomJS(executable_path='phantomjs.exe',desired_capabilities=cap)
-        # 先行测试用，最终须修改成无GUI的PhantomJS浏览器,暂时phantomJS的网络不能通过代理
-        #browser = webdriver.Chrome(executable_path='chromedriver.exe')
+    def openurl_and_login(self, url, username, password):
 
         self.browser.get(url)
         logging.info(time.strftime('%Y%m%d-%H:%M:%S', time.localtime(time.time())) + ' -->> 打开网址成功。')
@@ -26,16 +18,16 @@ class Collection():
         try:
             self.login_to(username, password)
         except selenium.common.exceptions.NoSuchElementException:
-            #如果报错说没有找到页面元素，刷新浏览器后再重新执行登陆
+            # 如果报错说没有找到页面元素，刷新浏览器后再重新执行登陆
             self.browser.refresh()
             self.login_to(username, password)
 
         logging.info(time.strftime('%Y%m%d-%H:%M:%S', time.localtime(time.time())) + ' -->> 登陆成功。')
         # 停3秒，让页面可以读取数据完整
         time.sleep(3)
-        #return browser
+        # return browser
 
-    def login_to(self,username, password):
+    def login_to(self, username, password):
         # 登录到系统中
         self.browser.find_element_by_id("username").send_keys(username)
         self.browser.find_element_by_id("password").send_keys(password)
@@ -64,7 +56,7 @@ class Collection():
         return statusDict[:-1]
 
     # 定义查询每页的详情
-    def statusDetials(self,statusDict, checkstatus):
+    def statusDetials(self, statusDict, checkstatus):
         statList = {}
         # statusDict操作这个list里面的字典。得到各项的状态，再做进一步的操作。
         for status in statusDict:
@@ -117,7 +109,7 @@ class Collection():
 
         return statList
 
-    def status_name(self,statustype):
+    def status_name(self, statustype):
         # 字典内容根据分析css表及页面得到以下内容，主要是用三个状态，红色、绿色、黄色
         # 红色是cm-icon-status-bad-health，绿色是cm-icon-status-good-health，黄色是cm-icon-status-concerning-health
         status = {'cm-icon-status-unknown': '未知',
@@ -134,7 +126,7 @@ class Collection():
                   'cm-icon-status-concerning-health': '存在隐患的运行状况'}
         return status[statustype]
 
-    def status_table(self,text):
+    def status_table(self, text):
         # 组合状态的数据，形成一份table的表格形式，将插入在邮件的正文中
         table_text = text
         html_table = '<table border="1"><tr align="center"><td>事件类型</td><td>运行状态</td><td>角色类型</td><td>主机名</td></tr>'
