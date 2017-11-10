@@ -7,30 +7,22 @@ from selenium import webdriver
 
 class Collection():
 
-    # def __init__(self,browser):
-    #     self.browser = browser
+    def __init__(self,browser):
+         self.browser = browser
 
     def openurl_and_login(self,url, username, password):
-        # cap = webdriver.DesiredCapabilities.PHANTOMJS
-        # cap["phantomjs.page.settings.resourceTimeout"] = 100
-        # cap["phantomjs.page.settings.userAgent"] = (
-        # "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/61.0.3163.100 Safari/537.36")
-        # browser = webdriver.PhantomJS(executable_path='phantomjs.exe',desired_capabilities=cap)
-        # 先行测试用，最终须修改成无GUI的PhantomJS浏览器,暂时phantomJS的网络不能通过代理
-        browser = webdriver.Chrome(executable_path='chromedriver.exe')
 
-        browser.get(url)
+        self.browser.get(url)
         logging.info(time.strftime('%Y%m%d-%H:%M:%S', time.localtime(time.time())) + ' -->> 打开网址成功。')
 
         # 登录到系统中
-        browser.find_element_by_id("username").send_keys(username)
-        browser.find_element_by_id("password").send_keys(password)
-        browser.find_element_by_name("submit").click()
+        self.browser.find_element_by_id("username").send_keys(username)
+        self.browser.find_element_by_id("password").send_keys(password)
+        self.browser.find_element_by_name("submit").click()
         logging.info(time.strftime('%Y%m%d-%H:%M:%S', time.localtime(time.time())) + ' -->> 登陆成功。')
         # 停3秒，让页面可以读取数据完整
         time.sleep(3)
 
-        return browser
 
     def getHomeStatus(self,browser):
         # 获取状态的图标和项目名
