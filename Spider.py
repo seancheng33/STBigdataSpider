@@ -24,8 +24,6 @@ cap["phantomjs.page.settings.userAgent"] = (
 browser = webdriver.PhantomJS(executable_path='phantomjs.exe',desired_capabilities=cap)
 
 # browser = webdriver.Chrome(executable_path='chromedriver.exe')
-#browser = webdriver.Chrome(executable_path='chromedriver.exe')
-
 
 spiderbrowser = Collection(browser)
 spiderbrowser.openurl_and_login(url, username, password)
