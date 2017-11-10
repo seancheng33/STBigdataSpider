@@ -1,5 +1,5 @@
 ﻿自动化脚本获取CDH网站上主机运行状态并将其发送邮件到指定邮箱
-本版本为window版
+本版本为linux_64bit版,phantomjs是64位版本，如果需要在32位中运行，请替换phantomjs文件
 
 开发运行环境：
 python-3.6.2
