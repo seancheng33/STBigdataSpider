@@ -17,15 +17,15 @@ url = config.get('spider', 'url')
 username = config.get('spider', 'username')
 password = config.get('spider', 'password')
 
-# cap = webdriver.DesiredCapabilities.PHANTOMJS
-# cap["phantomjs.page.settings.resourceTimeout"] = 100
-# cap["phantomjs.page.settings.userAgent"] = (
-# "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/61.0.3163.100 Safari/537.36")
-# browser = webdriver.PhantomJS(executable_path='phantomjs.exe',desired_capabilities=cap)
-# 先行测试用，最终须修改成无GUI的PhantomJS浏览器,暂时phantomJS的网络不能通过代理
+cap = webdriver.DesiredCapabilities.PHANTOMJS
+cap["phantomjs.page.settings.resourceTimeout"] = 100
+cap["phantomjs.page.settings.userAgent"] = (
+"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/61.0.3163.100 Safari/537.36")
+browser = webdriver.PhantomJS(executable_path='phantomjs.exe',desired_capabilities=cap)
+
 # browser = webdriver.Chrome(executable_path='chromedriver.exe')
-browser = webdriver.Chrome(executable_path='chromedriver.exe')
-# browser = webdriver.PhantomJS(executable_path='phantomjs.exe')
+#browser = webdriver.Chrome(executable_path='chromedriver.exe')
+
 
 spiderbrowser = Collection(browser)
 spiderbrowser.openurl_and_login(url, username, password)
