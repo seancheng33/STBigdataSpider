@@ -14,7 +14,7 @@ class Collection():
 
         self.browser.get(url)
         logging.info(time.strftime('%Y%m%d-%H:%M:%S', time.localtime(time.time())) + ' -->> 打开网址成功。')
-
+        #self.browser.save_screenshot("2.png")
         # 登录到系统中
         self.browser.find_element_by_id("username").send_keys(username)
         self.browser.find_element_by_id("password").send_keys(password)
@@ -24,9 +24,9 @@ class Collection():
         time.sleep(3)
 
 
-    def getHomeStatus(self,browser):
+    def getHomeStatus(self):
         # 获取状态的图标和项目名
-        statuspane = browser.find_elements_by_class_name("service-status-and-name")
+        statuspane = self.browser.find_elements_by_class_name("service-status-and-name")
 
         # 用一个list保存各个状态
         statusDict = []
@@ -47,7 +47,7 @@ class Collection():
         return statusDict[:-1]
 
     # 定义查询每页的详情
-    def statusDetials(self,statusDict, browser, checkstatus):
+    def statusDetials(self,statusDict,checkstatus):
         statList = {}
         # statusDict操作这个list里面的字典。得到各项的状态，再做进一步的操作。
         for status in statusDict:
@@ -55,18 +55,18 @@ class Collection():
             # 红色是cm-icon-status-bad-health，绿色是cm-icon-status-good-health，黄色是cm-icon-status-concerning-health
             if status['status'] == checkstatus:
                 # print('Good Status!')
-                browser.get(status['link'])
+                self.browser.get(status['link'])
                 logging.info(
                     time.strftime('%Y%m%d-%H:%M:%S', time.localtime(time.time())) + ' -->> 打开' + status[
                         'name'] + '页面成功')
-                browser.find_element_by_link_text('实例').click()
+                self.browser.find_element_by_link_text('实例').click()
                 logging.info(
                     time.strftime('%Y%m%d-%H:%M:%S', time.localtime(time.time())) + ' -->> 打开' + status[
                         'name'] + '实例页面成功')
                 time.sleep(3)
 
                 # 整行tr获取，避免出现数据混乱的情况。数据完整性比按列获取要好
-                trs = browser.find_elements_by_xpath(
+                trs = self.browser.find_elements_by_xpath(
                     '/ html / body / div[7] / form / div / div[2] / div[4] / table / tbody / tr')
 
                 # 用来存指定状态的字典的数组
