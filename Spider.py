@@ -22,6 +22,7 @@ cap["phantomjs.page.settings.resourceTimeout"] = 100
 cap["phantomjs.page.settings.userAgent"] = (
 "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/61.0.3163.100 Safari/537.36")
 browser = webdriver.PhantomJS(executable_path='phantomjs.exe',desired_capabilities=cap)
+browser.set_window_size(1366,800)
 
 # browser = webdriver.Chrome(executable_path='chromedriver.exe')
 
