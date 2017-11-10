@@ -23,9 +23,9 @@ password = config.get('spider', 'password')
 # "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/61.0.3163.100 Safari/537.36")
 # browser = webdriver.PhantomJS(executable_path='phantomjs.exe',desired_capabilities=cap)
 # 先行测试用，最终须修改成无GUI的PhantomJS浏览器,暂时phantomJS的网络不能通过代理
-# browser = webdriver.Chrome(executable_path='chromedriver.exe')
+
 browser = webdriver.Chrome(executable_path='chromedriver.exe')
-# browser = webdriver.PhantomJS(executable_path='phantomjs.exe')
+
 
 spiderbrowser = Collection(browser)
 spiderbrowser.openurl_and_login(url, username, password)
