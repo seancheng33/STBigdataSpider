@@ -2,8 +2,6 @@ import logging
 import time
 
 from bs4 import BeautifulSoup
-from selenium import webdriver
-
 
 class Collection():
 
@@ -89,7 +87,7 @@ class Collection():
                         #
                         sList.append(tmpDict)
                 if len(sList) != 0:
-                    print(sList)
+                    logging.info(sList)
 
                 statList[status['name']] = sList
 
@@ -104,8 +102,8 @@ class Collection():
         # 字典内容根据分析css表及页面得到以下内容，主要是用三个状态，红色、绿色、黄色
         # 红色是cm-icon-status-bad-health，绿色是cm-icon-status-good-health，黄色是cm-icon-status-concerning-health
         status = {'cm-icon-status-unknown': '未知',
-                  'cm-icon-status-history-not-available': '（未知）',
-                  'cm-icon-status-down': '（未知）',
+                  'cm-icon-status-history-not-available': '历史记录不可用',
+                  'cm-icon-status-down': '停止',
                   'cm-icon-status-stopping': '正在停止',
                   'cm-icon-status-starting': '正在启动',
                   'cm-icon-status-disabled-health': '已禁用的运行状况',
@@ -132,7 +130,6 @@ class Collection():
                 for j in i:
                     if line == 1:
                         html_table += '<td rowspan="' + str(list_num) + '">' + item + '</td>'
-
                     html_table += '<td>' + str(i[j]) + '</td>'
                     line += 1
                 html_table += '</tr>'

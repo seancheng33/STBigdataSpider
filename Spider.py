@@ -17,15 +17,15 @@ url = config.get('spider', 'url')
 username = config.get('spider', 'username')
 password = config.get('spider', 'password')
 
-cap = webdriver.DesiredCapabilities.PHANTOMJS
-cap["phantomjs.page.settings.resourceTimeout"] = 100
-cap["phantomjs.page.settings.userAgent"] = (
-"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/61.0.3163.100 Safari/537.36")
-browser = webdriver.PhantomJS(executable_path='phantomjs.exe',desired_capabilities=cap)
-browser.set_window_size(1366,800) #如果没有设置浏览器的大小，可能导致浏览页面太小，没有办法执行下面的内容
-# 先行测试用，最终须修改成无GUI的PhantomJS浏览器,暂时phantomJS的网络不能通过代理
+# cap = webdriver.DesiredCapabilities.PHANTOMJS
+# cap["phantomjs.page.settings.resourceTimeout"] = 100
+# cap["phantomjs.page.settings.userAgent"] = (
+# "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/61.0.3163.100 Safari/537.36")
+# browser = webdriver.PhantomJS(executable_path='phantomjs.exe',desired_capabilities=cap)
+# browser.set_window_size(1366,800) #如果没有设置浏览器的大小，可能导致浏览页面太小，没有办法执行下面的内容
+# # 先行测试用，最终须修改成无GUI的PhantomJS浏览器,暂时phantomJS的网络不能通过代理
 
-#browser = webdriver.Chrome(executable_path='chromedriver.exe')
+browser = webdriver.Chrome(executable_path='chromedriver.exe')
 
 
 spiderbrowser = Collection(browser)
@@ -34,6 +34,7 @@ statusDict = spiderbrowser.getHomeStatus()
 statusList = spiderbrowser.statusDetials(statusDict,config.get('spider', 'checkstatus'))
 mail_statustable = spiderbrowser.status_table(statusList)
 # 用有GUI的浏览器时，才需要用到这个休眠，测试时可以看退出前是否是已经浏览到正确的页面
+
 time.sleep(1)
 browser.quit()
 logging.info(time.strftime('%Y%m%d-%H:%M:%S', time.localtime(time.time())) + ' -->> 退出浏览器，结束脚本')
