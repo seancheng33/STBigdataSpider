@@ -1,6 +1,7 @@
 import logging
 import time
 
+import os
 import selenium
 from bs4 import BeautifulSoup
 from selenium import webdriver
@@ -113,8 +114,8 @@ class Collection():
         # 字典内容根据分析css表及页面得到以下内容，主要是用三个状态，红色、绿色、黄色
         # 红色是cm-icon-status-bad-health，绿色是cm-icon-status-good-health，黄色是cm-icon-status-concerning-health
         status = {'cm-icon-status-unknown': '未知',
-                  'cm-icon-status-history-not-available': '（未知）',
-                  'cm-icon-status-down': '（未知）',
+                  'cm-icon-status-history-not-available': '历史记录不可用',
+                  'cm-icon-status-down': '停止',
                   'cm-icon-status-stopping': '正在停止',
                   'cm-icon-status-starting': '正在启动',
                   'cm-icon-status-disabled-health': '已禁用的运行状况',
@@ -149,3 +150,26 @@ class Collection():
         html_table += '</table>'
 
         return html_table
+
+    def status_writer_to_file(self, text):
+        # 组合状态的数据，形成一份txt的文档，将其添加为邮件的附件
+        status_text = text
+        with open(os.path.abspath('data/status.txt'),'w') as stxt:
+            stxt.write('<table border="1"><tr align="center"><td>事件类型</td><td>运行状态</td><td>角色类型</td><td>主机名</td></tr>')
+
+            for item in status_text.keys():
+                eventname = item
+                event_list = status_text[item]
+                list_num = len(event_list)
+                line = 1
+                for i in event_list:
+                    stxt.write('<tr>')
+                    for j in i:
+                        if line == 1:
+                            stxt.write('<td rowspan="' + str(list_num) + '">' + item + '</td>')
+
+                        stxt.write('<td>' + str(i[j]) + '</td>')
+                        line += 1
+                        stxt.write('</tr>')
+
+            stxt.write('</table>')
