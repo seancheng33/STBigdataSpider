@@ -39,8 +39,8 @@ cc_receivers = #抄送的邮箱地址，可以多个也可以一个或者留空�
 
 需要检查状态的定义字段，此内容根据cdh的页面的css分析得出
 'cm-icon-status-unknown': '未知',页面的显示图标为
-'cm-icon-status-history-not-available': '（未知）',
-'cm-icon-status-down': '（未知）',
+'cm-icon-status-history-not-available': '历史记录不可用',
+'cm-icon-status-down': '停止',
 'cm-icon-status-stopping': '正在停止',
 'cm-icon-status-starting': '正在启动',
 'cm-icon-status-disabled-health': '已禁用的运行状况',
