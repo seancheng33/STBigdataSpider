@@ -1,7 +1,6 @@
 import time, sys, configparser, logging
 from selenium import webdriver
 from collection import Collection
-from sendmail import SendMail
 
 logging.basicConfig(filename='logs/' + time.strftime('%Y%m%d', time.localtime(time.time())) + '.log',
                     format='%(asctime)s %(filename)s[line:%(lineno)d] %(levelname)s %(message)s',
@@ -31,7 +30,8 @@ spiderbrowser = Collection(browser)
 spiderbrowser.openurl_and_login(url, username, password)
 statusDict = spiderbrowser.getHomeStatus()
 statusList = spiderbrowser.statusDetials(statusDict, config.get('spider', 'checkstatus'))
-mail_statustable = spiderbrowser.status_table(statusList)
+#mail_statustable = spiderbrowser.status_table(statusList)
+spiderbrowser.status_writer_to_file(statusList)
 # 用有GUI的浏览器时，才需要用到这个休眠，测试时可以看退出前是否是已经浏览到正确的页面
 time.sleep(1)
 browser.quit()
@@ -47,7 +47,7 @@ cc_receivers = config.get('mail', 'cc_receivers').split(',')  # 抄送名单，�
 proxy_url = config.get('proxy', 'url')
 proxy_port = int(config.get('proxy', 'port'))  # 取出来的值是字符串，记得转成整数类型，不然会报错
 
-sendMail = SendMail(mail_host, mail_user, mail_pass, sender, to_receivers, cc_receivers, mail_statustable)
-sendMail.send(proxy_url, proxy_port)
+#sendMail = SendMail(mail_host, mail_user, mail_pass, sender, to_receivers, cc_receivers, mail_statustable)
+#sendMail.send(proxy_url, proxy_port)
 
 sys.exit(0)

@@ -99,15 +99,11 @@ class Collection():
                         #
                         sList.append(tmpDict)
                 if len(sList) != 0:
-                    print(sList)
-
-                statList[status['name']] = sList
+                    statList[status['name']] = sList
 
                 logging.info(
                     time.strftime('%Y%m%d-%H:%M:%S', time.localtime(time.time())) + ' -->> 收集' + status[
                         'name'] + '数据完成')
-                # print(status['status'])
-
         return statList
 
     def status_name(self, statustype):
@@ -133,7 +129,6 @@ class Collection():
         html_table = '<table border="1"><tr align="center"><td>事件类型</td><td>运行状态</td><td>角色类型</td><td>主机名</td></tr>'
 
         for item in table_text.keys():
-            eventname = item
             event_list = table_text[item]
             list_num = len(event_list)
             line = 1
@@ -151,25 +146,55 @@ class Collection():
 
         return html_table
 
-    def status_writer_to_file(self, text):
+    def status_writer_to_file(self, status_text):
         # 组合状态的数据，形成一份txt的文档，将其添加为邮件的附件
-        status_text = text
         with open(os.path.abspath('data/status.txt'),'w') as stxt:
-            stxt.write('<table border="1"><tr align="center"><td>事件类型</td><td>运行状态</td><td>角色类型</td><td>主机名</td></tr>')
+            stxt.write('数据采集时间：'+time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(time.time()))+'\n')
+            #print(status_text)
+            for item in status_text:
+                stxt.write(item+'\n')
+                for event_list in status_text[item]:
+                    for i in event_list:
+                        stxt.write('#'+i+':'+event_list[i])
+                    stxt.write('\n')
 
-            for item in status_text.keys():
-                eventname = item
-                event_list = status_text[item]
-                list_num = len(event_list)
-                line = 1
-                for i in event_list:
-                    stxt.write('<tr>')
-                    for j in i:
-                        if line == 1:
-                            stxt.write('<td rowspan="' + str(list_num) + '">' + item + '</td>')
-
-                        stxt.write('<td>' + str(i[j]) + '</td>')
-                        line += 1
-                        stxt.write('</tr>')
-
-            stxt.write('</table>')
+'''
+{'HBase': 
+[{'运行状态': '运行状态良好', '角色类型': 'HBase Thrift Server', '主机名': 'clouderatest2'}, 
+{'运行状态': '运行状态良好', '角色类型': 'Master (活动)', '主机名': 'clouderatest1'}, 
+{'运行状态': '运行状态良好', '角色类型': 'RegionServer', '主机名': 'clouderatest4'}, 
+{'运行状态': '运行状态良好', '角色类型': 'RegionServer', '主机名': 'clouderatest6'}, 
+{'运行状态': '运行状态良好', '角色类型': 'RegionServer', '主机名': 'clouderatest5'}], 
+'HDFS': 
+[{'运行状态': '运行状态良好', '角色类型': 'DataNode', '主机名': 'clouderatest6'}, 
+{'运行状态': '运行状态良好', '角色类型': 'DataNode', '主机名': 'clouderatest5'}, 
+{'运行状态': '运行状态良好', '角色类型': 'DataNode', '主机名': 'clouderatest4'}, 
+{'运行状态': '运行状态良好', '角色类型': 'Failover Controller', '主机名': 'clouderatest1'}, 
+{'运行状态': '运行状态良好', '角色类型': 'Failover Controller', '主机名': 'clouderatest2'}, 
+{'运行状态': '运行状态良好', '角色类型': 'HttpFS', '主机名': 'clouderatest2'}, 
+{'运行状态': '运行状态良好', '角色类型': 'JournalNode', '主机名': 'clouderatest4'}, 
+{'运行状态': '运行状态良好', '角色类型': 'JournalNode', '主机名': 'clouderatest6'}, 
+{'运行状态': '运行状态良好', '角色类型': 'JournalNode', '主机名': 'clouderatest5'}, 
+{'运行状态': '运行状态良好', '角色类型': 'NameNode (备用)', '主机名': 'clouderatest1'}, 
+{'运行状态': '运行状态良好', '角色类型': 'NameNode (活动)', '主机名': 'clouderatest2'}], 
+'Hive': 
+[{'运行状态': '运行状态良好', '角色类型': 'Hive Metastore Server', '主机名': 'clouderatest1'}, 
+{'运行状态': '运行状态良好', '角色类型': 'HiveServer2', '主机名': 'clouderatest1'}], 
+'Hue': 
+[{'运行状态': '运行状态良好', '角色类型': 'Hue Server', '主机名': 'clouderatest2'}], 
+'Oozie': 
+[{'运行状态': '运行状态良好', '角色类型': 'Oozie Server', '主机名': 'clouderatest3'}], 
+'Spark': 
+[{'运行状态': '运行状态良好', '角色类型': 'History Server', '主机名': 'clouderatest2'}], 
+'Sqoop 2': [{'运行状态': '运行状态良好', '角色类型': 'Sqoop 2 Server', '主机名': 'clouderatest1'}], 
+'YARN (MR2 Included)': 
+[{'运行状态': '运行状态良好', '角色类型': 'JobHistory Server', '主机名': 'clouderatest3'}, 
+{'运行状态': '运行状态良好', '角色类型': 'NodeManager', '主机名': 'clouderatest4'}, 
+{'运行状态': '运行状态良好', '角色类型': 'NodeManager', '主机名': 'clouderatest6'}, 
+{'运行状态': '运行状态良好', '角色类型': 'NodeManager', '主机名': 'clouderatest5'}, 
+{'运行状态': '运行状态良好', '角色类型': 'ResourceManager (活动)', '主机名': 'clouderatest1'}], 
+'ZooKeeper': 
+[{'运行状态': '运行状态良好', '角色类型': 'Server', '主机名': 'clouderatest1'}, 
+{'运行状态': '运行状态良好', '角色类型': 'Server', '主机名': 'clouderatest3'}, 
+{'运行状态': '运行状态良好', '角色类型': 'Server', '主机名': 'clouderatest2'}]}
+'''
