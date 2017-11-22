@@ -36,7 +36,7 @@ spiderbrowser.openurl_and_login(url, username, password)
 statusDict = spiderbrowser.getHomeStatus()
 statusList = spiderbrowser.statusDetials(statusDict, config.get('spider', 'checkstatus'))
 #mail_statustable = spiderbrowser.status_table(statusList)
-spiderbrowser.status_writer_to_file(statusList)
+
 # 用有GUI的浏览器时，才需要用到这个休眠，测试时可以看退出前是否是已经浏览到正确的页面
 time.sleep(1)
 browser.quit()
@@ -45,6 +45,9 @@ logging.info(time.strftime('%Y%m%d-%H:%M:%S', time.localtime(time.time())) + ' -
 need_send_mail = spiderbrowser.need_send_mail(statusList)
 
 if need_send_mail:
+    #需要发信的同时才将数据写到文件中
+    spiderbrowser.status_writer_to_file(statusList)
+
     # 读取发送邮件的各项配置
     mail_host = config.get('mail', 'mail_host')  # 服务器
     mail_user = config.get('mail', 'mail_name')  # 用户名

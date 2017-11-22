@@ -1,14 +1,9 @@
 '''发送邮件功能模块  '''
-import smtplib, socks, logging, time
+import smtplib, socks, logging, time,sys,os
 from email.header import Header
 from email.mime.application import MIMEApplication
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
-
-import sys
-
-import os
-
 
 class SendMail():
     def __init__(self, mail_host, mail_user, mail_pass, sender, to_receivers, cc_receivers):
@@ -69,13 +64,14 @@ class SendMail():
             logging.warning(time.strftime('%Y%m%d-%H:%M:%S', time.localtime(time.time())) + " -->> Error: 无法发送邮件")
 
     def can_send(self):
-        # 获取文件的修改时间，如果是修改时间不是当天，内容归零，重新计数
+        # 获取文件的修改时间
         mtime = time.strftime('%Y%m%d', time.localtime(os.path.getmtime('count')))
+        #获取当前时间
         ntime = time.strftime('%Y%m%d', time.localtime(time.time()))
+        #如果是修改时间不是当天，内容归零，重新计数
         if mtime != ntime:
             with open('count', 'w') as f:
                 f.write('0')
-        # print(mtime)
 
         with open('count', 'r') as f:
             num = f.read()
