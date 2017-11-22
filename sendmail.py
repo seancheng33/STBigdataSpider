@@ -5,6 +5,10 @@ from email.mime.application import MIMEApplication
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 
+import sys
+
+import os
+
 
 class SendMail():
     def __init__(self, mail_host, mail_user, mail_pass, sender, to_receivers, cc_receivers):
@@ -17,13 +21,13 @@ class SendMail():
         self.cc_receivers = cc_receivers
 
         # 邮件正文内容
-        self.mail_content = MIMEText('<p>附件为运行状态不良的各主机状态,本邮件内容由python脚本自动采集并发送。</p>','html', 'utf-8')
+        self.mail_content = MIMEText('<p>附件为运行状态不良的各主机状态,本邮件内容由python脚本自动采集并发送。</p>', 'html', 'utf-8')
         # 三个参数：
         # 第一个为文本内容
         # 第二个 plain 设置文本格式，如果需要HTML格式，修改成 html 即可，正文中的内容需要写成html代码的格式
         # 第三个 utf-8 设置编码格式
         # message = MIMEText(text, 'plain', 'utf-8')
-        #self.message = MIMEText(self.mail_content, 'html', 'utf-8')
+        # self.message = MIMEText(self.mail_content, 'html', 'utf-8')
 
         self.message = MIMEMultipart()
 
@@ -35,14 +39,18 @@ class SendMail():
         self.message['Subject'] = Header(subject, 'utf-8')
         self.message.attach(self.mail_content)
 
-        #self.att1 = MIMEText(open('data/status.txt','rb').read(),'base64','utf-8')
-        self.att1 = MIMEApplication(open('data/status.txt','rb').read())
+        # self.att1 = MIMEText(open('data/status.txt','rb').read(),'base64','utf-8')
+        self.att1 = MIMEApplication(open('data/status.txt', 'rb').read())
         self.att1['Content-Type'] = 'application/octet-stream'
         self.att1['Content-Disposition'] = 'attachment;filename="status.txt"'
         self.message.attach(self.att1)
 
     def send(self, proxy_url, proxy_port):
-
+        if not self.can_send():
+            logging.info(
+                time.strftime('%Y%m%d-%H:%M:%S', time.localtime(time.time())) +
+                "  -->> 邮件超过设定的发送次数，不再发信，退出系统")
+            sys.exit(0)
         if proxy_url != '' and proxy_port != '':
             # 判断如果代理的地址和端口不为空，即有填写代理服务器的信息，需要使用代理，如果两项都为空即是不需要使用代理服务器
             # 需要使用代理访问网络才可以发送邮件。
@@ -59,3 +67,24 @@ class SendMail():
             logging.info(time.strftime('%Y%m%d-%H:%M:%S', time.localtime(time.time())) + "  -->> 邮件发送成功")
         except smtplib.SMTPException:
             logging.warning(time.strftime('%Y%m%d-%H:%M:%S', time.localtime(time.time())) + " -->> Error: 无法发送邮件")
+
+    def can_send(self):
+        # 获取文件的修改时间，如果是修改时间不是当天，内容归零，重新计数
+        mtime = time.strftime('%Y%m%d', time.localtime(os.path.getmtime('count')))
+        ntime = time.strftime('%Y%m%d', time.localtime(time.time()))
+        if mtime != ntime:
+            with open('count', 'w') as f:
+                f.write('0')
+        # print(mtime)
+
+        with open('count', 'r') as f:
+            num = f.read()
+        if int(num) > 5:
+            # 如果计数文件中的内容大于5，表示已经发送过5次邮件，返回不能发信的False
+            return False
+        else:
+            # 小于等于5，就是还在可以发信的范围，计数加1，次数写入文件中，返回可以发信的True
+            num = int(num) + 1
+            with open('count', 'w') as f:
+                f.write(str(num))
+            return True

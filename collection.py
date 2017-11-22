@@ -147,54 +147,24 @@ class Collection():
         return html_table
 
     def status_writer_to_file(self, status_text):
-        # 组合状态的数据，形成一份txt的文档，将其添加为邮件的附件
-        with open(os.path.abspath('data/status.txt'),'w') as stxt:
-            stxt.write('数据采集时间：'+time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(time.time()))+'\n')
-            #print(status_text)
-            for item in status_text:
-                stxt.write(item+'\n')
-                for event_list in status_text[item]:
-                    for i in event_list:
-                        stxt.write('#'+i+':'+event_list[i])
-                    stxt.write('\n')
+        #只有status_text非空，有内容，才会执行文件的写入功能，不然不写入文件
+        if len(status_text) !=0:
+            # 组合状态的数据，形成一份txt的文档，将其添加为邮件的附件
+            with open(os.path.abspath('data/status.txt'),'w') as stxt:
+                stxt.write('数据采集时间：'+time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(time.time()))+'\n')
+                for item in status_text:
+                    stxt.write(item+'\n')
+                    for event_list in status_text[item]:
+                        for i in event_list:
+                            stxt.write('#'+i+':'+event_list[i])
+                        stxt.write('\n')
 
-'''
-{'HBase': 
-[{'运行状态': '运行状态良好', '角色类型': 'HBase Thrift Server', '主机名': 'clouderatest2'}, 
-{'运行状态': '运行状态良好', '角色类型': 'Master (活动)', '主机名': 'clouderatest1'}, 
-{'运行状态': '运行状态良好', '角色类型': 'RegionServer', '主机名': 'clouderatest4'}, 
-{'运行状态': '运行状态良好', '角色类型': 'RegionServer', '主机名': 'clouderatest6'}, 
-{'运行状态': '运行状态良好', '角色类型': 'RegionServer', '主机名': 'clouderatest5'}], 
-'HDFS': 
-[{'运行状态': '运行状态良好', '角色类型': 'DataNode', '主机名': 'clouderatest6'}, 
-{'运行状态': '运行状态良好', '角色类型': 'DataNode', '主机名': 'clouderatest5'}, 
-{'运行状态': '运行状态良好', '角色类型': 'DataNode', '主机名': 'clouderatest4'}, 
-{'运行状态': '运行状态良好', '角色类型': 'Failover Controller', '主机名': 'clouderatest1'}, 
-{'运行状态': '运行状态良好', '角色类型': 'Failover Controller', '主机名': 'clouderatest2'}, 
-{'运行状态': '运行状态良好', '角色类型': 'HttpFS', '主机名': 'clouderatest2'}, 
-{'运行状态': '运行状态良好', '角色类型': 'JournalNode', '主机名': 'clouderatest4'}, 
-{'运行状态': '运行状态良好', '角色类型': 'JournalNode', '主机名': 'clouderatest6'}, 
-{'运行状态': '运行状态良好', '角色类型': 'JournalNode', '主机名': 'clouderatest5'}, 
-{'运行状态': '运行状态良好', '角色类型': 'NameNode (备用)', '主机名': 'clouderatest1'}, 
-{'运行状态': '运行状态良好', '角色类型': 'NameNode (活动)', '主机名': 'clouderatest2'}], 
-'Hive': 
-[{'运行状态': '运行状态良好', '角色类型': 'Hive Metastore Server', '主机名': 'clouderatest1'}, 
-{'运行状态': '运行状态良好', '角色类型': 'HiveServer2', '主机名': 'clouderatest1'}], 
-'Hue': 
-[{'运行状态': '运行状态良好', '角色类型': 'Hue Server', '主机名': 'clouderatest2'}], 
-'Oozie': 
-[{'运行状态': '运行状态良好', '角色类型': 'Oozie Server', '主机名': 'clouderatest3'}], 
-'Spark': 
-[{'运行状态': '运行状态良好', '角色类型': 'History Server', '主机名': 'clouderatest2'}], 
-'Sqoop 2': [{'运行状态': '运行状态良好', '角色类型': 'Sqoop 2 Server', '主机名': 'clouderatest1'}], 
-'YARN (MR2 Included)': 
-[{'运行状态': '运行状态良好', '角色类型': 'JobHistory Server', '主机名': 'clouderatest3'}, 
-{'运行状态': '运行状态良好', '角色类型': 'NodeManager', '主机名': 'clouderatest4'}, 
-{'运行状态': '运行状态良好', '角色类型': 'NodeManager', '主机名': 'clouderatest6'}, 
-{'运行状态': '运行状态良好', '角色类型': 'NodeManager', '主机名': 'clouderatest5'}, 
-{'运行状态': '运行状态良好', '角色类型': 'ResourceManager (活动)', '主机名': 'clouderatest1'}], 
-'ZooKeeper': 
-[{'运行状态': '运行状态良好', '角色类型': 'Server', '主机名': 'clouderatest1'}, 
-{'运行状态': '运行状态良好', '角色类型': 'Server', '主机名': 'clouderatest3'}, 
-{'运行状态': '运行状态良好', '角色类型': 'Server', '主机名': 'clouderatest2'}]}
-'''
+                logging.info(
+                    time.strftime('%Y%m%d-%H:%M:%S', time.localtime(time.time())) + ' -->> 数据写入文件完成')
+
+    def need_send_mail(self,status_text):
+        #状态字典的长度为零，表示没有预算需要采集的信息，不用发信
+        if len(status_text) == 0:
+            return False
+
+        return True
