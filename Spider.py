@@ -1,6 +1,7 @@
 import time, sys, configparser, logging
 from selenium import webdriver
 from collection import Collection
+from sendmail import SendMail
 
 logging.basicConfig(filename='logs/' + time.strftime('%Y%m%d', time.localtime(time.time())) + '.log',
                     format='%(asctime)s %(filename)s[line:%(lineno)d] %(levelname)s %(message)s',
@@ -15,15 +16,19 @@ config.read_file(config_file)
 url = config.get('spider', 'url')
 username = config.get('spider', 'username')
 password = config.get('spider', 'password')
-
-# cap = webdriver.DesiredCapabilities.PHANTOMJS
-# cap["phantomjs.page.settings.resourceTimeout"] = 100
-# cap["phantomjs.page.settings.userAgent"] = (
-# "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/61.0.3163.100 Safari/537.36")
-# browser = webdriver.PhantomJS(executable_path='phantomjs.exe',desired_capabilities=cap)
-# 先行测试用，最终须修改成无GUI的PhantomJS浏览器,暂时phantomJS的网络不能通过代理
-
-browser = webdriver.Chrome(executable_path='chromedriver.exe')
+#配置文件读出来的值都是字符串类型，要做其他类型使用，需要做类型转化
+guibrowser = config.get('spider', 'guibrowser')
+#判断是使用什么浏览器插件，True是有gui的chrome，False是无gui的phantomjs
+if guibrowser == str(True):
+    browser = webdriver.Chrome(executable_path='chromedriver.exe')
+else:
+    cap = webdriver.DesiredCapabilities.PHANTOMJS
+    cap["phantomjs.page.settings.resourceTimeout"] = 100
+    cap["phantomjs.page.settings.userAgent"] = (
+        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/61.0.3163.100 Safari/537.36")
+    browser = webdriver.PhantomJS(executable_path='phantomjs.exe', desired_capabilities=cap)
+    #要设定浏览器的大小，不然被认为是收集的浏览页面大小，会后面报错找不到输入框。原因未知，待测试排查。
+    browser.set_window_size(1366,768)
 
 
 spiderbrowser = Collection(browser)
@@ -47,7 +52,7 @@ cc_receivers = config.get('mail', 'cc_receivers').split(',')  # 抄送名单，�
 proxy_url = config.get('proxy', 'url')
 proxy_port = int(config.get('proxy', 'port'))  # 取出来的值是字符串，记得转成整数类型，不然会报错
 
-#sendMail = SendMail(mail_host, mail_user, mail_pass, sender, to_receivers, cc_receivers, mail_statustable)
-#sendMail.send(proxy_url, proxy_port)
+sendMail = SendMail(mail_host, mail_user, mail_pass, sender, to_receivers, cc_receivers)
+sendMail.send(proxy_url, proxy_port)
 
 sys.exit(0)

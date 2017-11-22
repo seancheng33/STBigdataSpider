@@ -19,6 +19,7 @@ pip install -r requests.txt
 config.ini配置说明，请按实际部署的情况修改config.ini中的以下内容
 
 [spider]#爬取数据功能的配置
+guibrowser = True #判断是使用什么浏览器插件，True是有gui的chrome，False是无gui的phantomjs
 url = #需要打开的网址，例：http://127.0.0.1:7180/cmf/home
 username = #登录的用户名，例：admin 或 root
 password = #登录的密码，例：password 或 123456789
