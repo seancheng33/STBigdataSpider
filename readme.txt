@@ -18,6 +18,7 @@ pip install -r requests.txt
 
 config.ini配置说明，请按实际部署的情况修改config.ini中的以下内容,详情请看manual.txt
 
+2017-11-22:发信间隔时间、发信次数判断，调整Spider.py部分代码至sendmail.py中。为发信功能剥离独立做准备。
 2017-11-22:
 新增功能：
 1、判断是否有内容需要发信，调整需要发信才写入文件进行保存
