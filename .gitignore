@@ -2,3 +2,4 @@
 config - ����.ini
 .idea/*
 logs/*
+data/*

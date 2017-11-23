@@ -47,18 +47,7 @@ need_send_mail = spiderbrowser.need_send_mail(statusList)
 if need_send_mail:
     #需要发信的同时才将数据写到文件中
     spiderbrowser.status_writer_to_file(statusList)
-
-    # 读取发送邮件的各项配置
-    mail_host = config.get('mail', 'mail_host')  # 服务器
-    mail_user = config.get('mail', 'mail_name')  # 用户名
-    mail_pass = config.get('mail', 'mail_password')  # 密码
-    sender = config.get('mail', 'sender')  # 发送邮件的邮箱地址
-    to_receivers = config.get('mail', 'to_receivers').split(',')  # 发送名单，转成数组
-    cc_receivers = config.get('mail', 'cc_receivers').split(',')  # 抄送名单，转成数组
-    proxy_url = config.get('proxy', 'url')
-    proxy_port = int(config.get('proxy', 'port'))  # 取出来的值是字符串，记得转成整数类型，不然会报错
-
-    sendMail = SendMail(mail_host, mail_user, mail_pass, sender, to_receivers, cc_receivers)
-    sendMail.send(proxy_url, proxy_port)
+    sendMail = SendMail()
+    sendMail.send()
 
 sys.exit(0)
