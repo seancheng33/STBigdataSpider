@@ -1,0 +1,25 @@
+[INFO  - 2017-11-22T03:10:25.641Z] GhostDriver - Main - running on port 49384
+[INFO  - 2017-11-22T03:10:29.044Z] Session [b17133f0-cf32-11e7-b664-11b255971f75] - page.settings - {"XSSAuditingEnabled":false,"javascriptCanCloseWindows":true,"javascriptCanOpenWindows":true,"javascriptEnabled":true,"loadImages":true,"localToRemoteUrlAccessEnabled":false,"userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/61.0.3163.100 Safari/537.36","webSecurityEnabled":true}
+[INFO  - 2017-11-22T03:10:29.045Z] Session [b17133f0-cf32-11e7-b664-11b255971f75] - page.customHeaders:  - {}
+[INFO  - 2017-11-22T03:10:29.045Z] Session [b17133f0-cf32-11e7-b664-11b255971f75] - Session.negotiatedCapabilities - {"browserName":"phantomjs","version":"2.1.1","driverName":"ghostdriver","driverVersion":"1.2.0","platform":"windows-10-32bit","javascriptEnabled":true,"takesScreenshot":true,"handlesAlerts":false,"databaseEnabled":false,"locationContextEnabled":false,"applicationCacheEnabled":false,"browserConnectionEnabled":false,"cssSelectorsEnabled":true,"webStorageEnabled":false,"rotatable":false,"acceptSslCerts":false,"nativeEvents":true,"proxy":{"proxyType":"direct"},"phantomjs.page.settings.resourceTimeout":100,"phantomjs.page.settings.userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/61.0.3163.100 Safari/537.36"}
+[INFO  - 2017-11-22T03:10:29.045Z] SessionManagerReqHand - _postNewSessionCommand - New Session Created: b17133f0-cf32-11e7-b664-11b255971f75
+[ERROR - 2017-11-22T03:10:30.563Z] Session [b17133f0-cf32-11e7-b664-11b255971f75] - page.onError - msg: Error: Script error for "moment"
+http://requirejs.org/docs/errors.html#scripterror
+
+  phantomjs://platform/console++.js:263 in error
+[ERROR - 2017-11-22T03:10:30.564Z] Session [b17133f0-cf32-11e7-b664-11b255971f75] - page.onError - stack:
+  defaultOnError (http://10.245.254.139:7180/static/ext/requirejs/require.js:140)
+  onError (http://10.245.254.139:7180/static/ext/requirejs/require.js:544)
+  onScriptError (http://10.245.254.139:7180/static/ext/requirejs/require.js:1732)
+
+  phantomjs://platform/console++.js:263 in error
+[ERROR - 2017-11-22T03:10:30.564Z] Session [b17133f0-cf32-11e7-b664-11b255971f75] - page.onError - msg: Error: Script error for "knockout", needed by: cloudera/common/UserSettings, cloudera/knockout/ko.spinner, cloudera-ui/ko/bindings/safeHTML
+http://requirejs.org/docs/errors.html#scripterror
+
+  phantomjs://platform/console++.js:263 in error
+[ERROR - 2017-11-22T03:10:30.564Z] Session [b17133f0-cf32-11e7-b664-11b255971f75] - page.onError - stack:
+  defaultOnError (http://10.245.254.139:7180/static/ext/requirejs/require.js:140)
+  onError (http://10.245.254.139:7180/static/ext/requirejs/require.js:544)
+  onScriptError (http://10.245.254.139:7180/static/ext/requirejs/require.js:1732)
+
+  phantomjs://platform/console++.js:263 in error

@@ -1,5 +1,4 @@
 [spider]
-guibrowser = True
 url = 
 username = 
 password = 
@@ -10,7 +9,7 @@ url =
 port = 
 
 [mail]
-mail_host = smtp.139.com
+mail_host = 
 mail_name = 
 mail_password = 
 sender = 

@@ -16,40 +16,40 @@ config.read_file(config_file)
 url = config.get('spider', 'url')
 username = config.get('spider', 'username')
 password = config.get('spider', 'password')
-
-# cap = webdriver.DesiredCapabilities.PHANTOMJS
-# cap["phantomjs.page.settings.resourceTimeout"] = 100
-# cap["phantomjs.page.settings.userAgent"] = (
-# "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/61.0.3163.100 Safari/537.36")
-# browser = webdriver.PhantomJS(executable_path='phantomjs.exe',desired_capabilities=cap)
-# browser.set_window_size(1366,800) #如果没有设置浏览器的大小，可能导致浏览页面太小，没有办法执行下面的内容
-# # 先行测试用，最终须修改成无GUI的PhantomJS浏览器,暂时phantomJS的网络不能通过代理
-
-browser = webdriver.Chrome(executable_path='chromedriver.exe')
+#配置文件读出来的值都是字符串类型，要做其他类型使用，需要做类型转化
+guibrowser = config.get('spider', 'guibrowser')
+#判断是使用什么浏览器插件，True是有gui的chrome，False是无gui的phantomjs
+if guibrowser == str(True):
+    browser = webdriver.Chrome(executable_path='chromedriver.exe')
+else:
+    cap = webdriver.DesiredCapabilities.PHANTOMJS
+    cap["phantomjs.page.settings.resourceTimeout"] = 100
+    cap["phantomjs.page.settings.userAgent"] = (
+        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/61.0.3163.100 Safari/537.36")
+    browser = webdriver.PhantomJS(executable_path='phantomjs.exe', desired_capabilities=cap)
+    #要设定浏览器的大小，不然被认为是收集的浏览页面大小，会后面报错找不到输入框。原因未知，待测试排查。
+    browser.set_window_size(1366,768)
 
 
 spiderbrowser = Collection(browser)
 spiderbrowser.openurl_and_login(url, username, password)
 statusDict = spiderbrowser.getHomeStatus()
-statusList = spiderbrowser.statusDetials(statusDict,config.get('spider', 'checkstatus'))
-mail_statustable = spiderbrowser.status_table(statusList)
-# 用有GUI的浏览器时，才需要用到这个休眠，测试时可以看退出前是否是已经浏览到正确的页面
+statusList = spiderbrowser.statusDetials(statusDict, config.get('spider', 'checkstatus'))
+#mail_statustable = spiderbrowser.status_table(statusList)
 
+# 用有GUI的浏览器时，才需要用到这个休眠，测试时可以看退出前是否是已经浏览到正确的页面
 time.sleep(1)
 browser.quit()
-logging.info(time.strftime('%Y%m%d-%H:%M:%S', time.localtime(time.time())) + ' -->> 退出浏览器，结束脚本')
+logging.info(time.strftime('%Y%m%d-%H:%M:%S', time.localtime(time.time())) + ' -->> 退出浏览器')
+#传入状态列表，判断是否需要发信
+need_send_mail = spiderbrowser.need_send_mail(statusList)
 
-# 读取发送邮件的各项配置
-mail_host = config.get('mail', 'mail_host')  # 服务器
-mail_user = config.get('mail', 'mail_name')  # 用户名
-mail_pass = config.get('mail', 'mail_password')  # 密码
-sender = config.get('mail', 'sender')  # 发送邮件的邮箱地址
-to_receivers = config.get('mail', 'to_receivers').split(',')  # 发送名单，转成数组
-cc_receivers = config.get('mail', 'cc_receivers').split(',')  # 抄送名单，转成数组
-proxy_url = config.get('proxy', 'url')
-proxy_port = int(config.get('proxy', 'port'))  # 取出来的值是字符串，记得转成整数类型，不然会报错
+if need_send_mail:
+    logging.info(time.strftime('%Y%m%d-%H:%M:%S', time.localtime(time.time())) + ' -->> 进入数据写入文件和发信流程')
+    #需要发信的同时才将数据写到文件中
+    spiderbrowser.status_writer_to_file(statusList)
+    sendMail = SendMail()
+    sendMail.send()
 
-sendMail = SendMail(mail_host, mail_user, mail_pass, sender, to_receivers, cc_receivers, mail_statustable)
-sendMail.send(proxy_url, proxy_port)
-
+#加个退出，确保脚本有被退出，避免脚本残留系统消耗资源
 sys.exit(0)
