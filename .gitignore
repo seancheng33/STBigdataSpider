@@ -1,5 +1,6 @@
 *.ini
 config - ����.ini
+*.backup
 .idea/*
 logs/*
 data/*
