@@ -72,7 +72,7 @@ class SendMail():
             smtpObj.quit()  # 关闭连接
             logging.info(time.strftime('%Y%m%d-%H:%M:%S', time.localtime(time.time())) + "  -->> 邮件发送成功")
         except smtplib.SMTPException:
-            logging.warning(time.strftime('%Y%m%d-%H:%M:%S', time.localtime(time.time())) + " -->> Error: 无法发送邮件")
+            logging.error(time.strftime('%Y%m%d-%H:%M:%S', time.localtime(time.time())) + " -->> Error: 无法发送邮件")
 
     def can_send(self):
         # 获取文件的修改时间
@@ -94,7 +94,8 @@ class SendMail():
                 num = f.read()
             if int(num) > int(self.config.get('mail', 'max_send')):
                 # 如果计数文件中的内容大于5，表示已经发送过5次邮件，返回不能发信的False
-                logging.info(time.strftime('%Y%m%d-%H:%M:%S', time.localtime(time.time())) + "  -->> 达到每天邮件发送的最大次数，邮件不发送")
+                logging.info(time.strftime('%Y%m%d-%H:%M:%S', time.localtime(time.time())) +
+                             "  -->> 当前发信次数"+num+"，已经达到每天邮件发送的最大次数，邮件不再发送")
                 return False
             else:
                 # 小于等于5，就是还在可以发信的范围，计数加1，次数写入文件中，返回可以发信的True

@@ -40,14 +40,16 @@ statusList = spiderbrowser.statusDetials(statusDict, config.get('spider', 'check
 # 用有GUI的浏览器时，才需要用到这个休眠，测试时可以看退出前是否是已经浏览到正确的页面
 time.sleep(1)
 browser.quit()
-logging.info(time.strftime('%Y%m%d-%H:%M:%S', time.localtime(time.time())) + ' -->> 退出浏览器，结束脚本')
+logging.info(time.strftime('%Y%m%d-%H:%M:%S', time.localtime(time.time())) + ' -->> 退出浏览器')
 #传入状态列表，判断是否需要发信
 need_send_mail = spiderbrowser.need_send_mail(statusList)
 
 if need_send_mail:
+    logging.info(time.strftime('%Y%m%d-%H:%M:%S', time.localtime(time.time())) + ' -->> 进入数据写入文件和发信流程')
     #需要发信的同时才将数据写到文件中
     spiderbrowser.status_writer_to_file(statusList)
     sendMail = SendMail()
     sendMail.send()
 
+#加个退出，确保脚本有被退出，避免脚本残留系统消耗资源
 sys.exit(0)

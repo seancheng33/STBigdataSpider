@@ -20,6 +20,7 @@ class Collection():
             self.login_to(username, password)
         except selenium.common.exceptions.NoSuchElementException:
             # 如果报错说没有找到页面元素，刷新浏览器后再重新执行登陆
+            logging.warning(time.strftime('%Y%m%d-%H:%M:%S', time.localtime(time.time())) + ' -->> 页面获取元素失败，刷新页面。')
             self.browser.refresh()
             self.login_to(username, password)
 
