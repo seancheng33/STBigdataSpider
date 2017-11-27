@@ -1,7 +1,8 @@
+import configparser
 import logging
 import time
 
-import os
+import os,shutil
 import selenium
 from bs4 import BeautifulSoup
 from selenium import webdriver
@@ -10,6 +11,15 @@ from selenium import webdriver
 class Collection():
     def __init__(self, browser):
         self.browser = browser
+        logging.basicConfig(filename='logs/' + time.strftime('%Y%m%d', time.localtime(time.time())) + '.log',
+                            format='%(asctime)s %(filename)s[line:%(lineno)d] %(levelname)s %(message)s',
+                            datefmt='%a, %d %b %Y %H:%M:%S',
+                            level=logging.DEBUG)
+
+        # 读取配置文件 config.ini
+        self.config = configparser.ConfigParser()
+        self.config_file = open("config.ini", 'r')
+        self.config.read_file(self.config_file)
 
     def openurl_and_login(self, url, username, password):
 
@@ -60,51 +70,57 @@ class Collection():
     # 定义查询每页的详情
     def statusDetials(self, statusDict, checkstatus):
         statList = {}
-        # statusDict操作这个list里面的字典。得到各项的状态，再做进一步的操作。
-        for status in statusDict:
-            # 判断条件，根据上面的i的class的内容来判断
-            # 红色是cm-icon-status-bad-health，绿色是cm-icon-status-good-health，黄色是cm-icon-status-concerning-health
-            if status['status'] == checkstatus:
-                # print('Good Status!')
-                self.browser.get(status['link'])
-                logging.info(
-                    time.strftime('%Y%m%d-%H:%M:%S', time.localtime(time.time())) + ' -->> 打开' + status[
-                        'name'] + '页面成功')
-                self.browser.find_element_by_link_text('实例').click()
-                logging.info(
-                    time.strftime('%Y%m%d-%H:%M:%S', time.localtime(time.time())) + ' -->> 打开' + status[
-                        'name'] + '实例页面成功')
-                time.sleep(3)
+        checkList = checkstatus.split(',')
+        for check in checkList:
+            # statusDict操作这个list里面的字典。得到各项的状态，再做进一步的操作。
+            for status in statusDict:
+                # 判断条件，根据上面的i的class的内容来判断
+                # 红色是cm-icon-status-bad-health，绿色是cm-icon-status-good-health，黄色是cm-icon-status-concerning-health
+                if status['status'] == check:
+                    self.browser.get(status['link'])
+                    logging.info(
+                        time.strftime('%Y%m%d-%H:%M:%S', time.localtime(time.time())) + ' -->> 打开' + status[
+                            'name'] + '页面成功')
+                    self.browser.find_element_by_link_text('实例').click()
+                    logging.info(
+                        time.strftime('%Y%m%d-%H:%M:%S', time.localtime(time.time())) + ' -->> 打开' + status[
+                            'name'] + '实例页面成功')
+                    time.sleep(3)
 
-                # 整行tr获取，避免出现数据混乱的情况。数据完整性比按列获取要好
-                trs = self.browser.find_elements_by_xpath(
-                    '/ html / body / div[7] / form / div / div[2] / div[4] / table / tbody / tr')
+                    # 整行tr获取，避免出现数据混乱的情况。数据完整性比按列获取要好
+                    trs = self.browser.find_elements_by_xpath(
+                        '/ html / body / div[7] / form / div / div[2] / div[4] / table / tbody / tr')
+                    #/ html / body / div[7] / form / div / div[2] / div[4] / table / tbody / tr           #用于CDH 5.11.0的数据获取
+                    #//*[@id="serviceContent"]/div/form/div/div[2]/div[4]/table/tbody/tr        #用于CDH 5.10.0的数据获取
+                    #print(trs)
 
-                # 用来存指定状态的字典的数组
-                sList = []
-                for tr in trs[3:]:
-                    linecode = tr.get_attribute('innerHTML')
-                    # 将上面提取的信息，传给beautifulsoup处理
-                    soup = BeautifulSoup(linecode, "lxml")
-                    # 状态图标的这个独立拿出来处理，用来判断状态情况，这个得到的是一个数组['tiny','cm-icon','cm-icon-status-xxx-xxx']
-                    stat = soup.i['class']
-                    # 判断状态, 数组的前两个元素'tiny','cm-icon' 没有判断状态的意义，取第三个元素出来用'cm-icon-status-xxx-xxx'
-                    if stat[2] == checkstatus:
-                        # 得到的数组的数据结构[复选框，状态的图标，角色类型，状态，主机，授权状态，角色组]
-                        lstats = soup.select('td')
-                        type = lstats[2].text  # 角色类型
-                        name = lstats[4].text  # 主机
-                        # 组成有一个字典字段
-                        # tmpDict = {'status': stat[2], 'type': type, 'name': name}
-                        tmpDict = {'运行状态': self.status_name(stat[2]), '角色类型': type, '主机名': name}
-                        #
-                        sList.append(tmpDict)
-                if len(sList) != 0:
-                    statList[status['name']] = sList
+                    # 用来存指定状态的字典的数组
+                    sList = []
+                    for check2 in checkList:
+                        for tr in trs[3:]:
+                            linecode = tr.get_attribute('innerHTML')
+                            # 将上面提取的信息，传给beautifulsoup处理
+                            soup = BeautifulSoup(linecode, "lxml")
+                            # 状态图标的这个独立拿出来处理，用来判断状态情况，这个得到的是一个数组['tiny','cm-icon','cm-icon-status-xxx-xxx']
+                            stat = soup.i['class']
+                            # 判断状态, 数组的前两个元素'tiny','cm-icon' 没有判断状态的意义，取第三个元素出来用'cm-icon-status-xxx-xxx'
+                            if stat[2] == check2:
+                                # 得到的数组的数据结构[复选框，状态的图标，角色类型，状态，主机，授权状态，角色组]
+                                lstats = soup.select('td')
+                                type = lstats[2].text  # 角色类型
+                                name = lstats[4].text  # 主机
+                                # 组成有一个字典字段
+                                # tmpDict = {'status': stat[2], 'type': type, 'name': name}
+                                tmpDict = {'运行状态': self.status_name(stat[2]), '角色类型': type, '主机名': name}
+                                #
+                                sList.append(tmpDict)
+                    if len(sList) != 0:
+                        print(sList)
+                        statList[status['name']] = sList
 
-                logging.info(
-                    time.strftime('%Y%m%d-%H:%M:%S', time.localtime(time.time())) + ' -->> 收集' + status[
-                        'name'] + '数据完成')
+                    logging.info(
+                        time.strftime('%Y%m%d-%H:%M:%S', time.localtime(time.time())) + ' -->> 收集' + status[
+                            'name'] + '数据完成')
         return statList
 
     def status_name(self, statustype):
@@ -148,20 +164,19 @@ class Collection():
         return html_table
 
     def status_writer_to_file(self, status_text):
-        #只有status_text非空，有内容，才会执行文件的写入功能，不然不写入文件
-        if len(status_text) !=0:
-            # 组合状态的数据，形成一份txt的文档，将其添加为邮件的附件
-            with open(os.path.abspath('data/status.txt'),'w',encoding='utf-8') as stxt:
-                stxt.write('数据采集时间：'+time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(time.time()))+'\n')
+        # 组合状态的数据，形成一份txt的文档，将其添加为邮件的附件
+        with open(os.path.abspath('data/status.txt'),'w',encoding='utf-8') as stxt:
+            stxt.write('数据采集时间：'+time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(time.time()))+'\n')
+            if status_text !='':
                 for item in status_text:
                     stxt.write(item+'\n')
                     for event_list in status_text[item]:
                         for i in event_list:
                             stxt.write('#'+i+':'+event_list[i])
                         stxt.write('\n')
-
                 logging.info(
                     time.strftime('%Y%m%d-%H:%M:%S', time.localtime(time.time())) + ' -->> 数据写入文件完成')
+        self.copy_file_to()
 
     def need_send_mail(self,status_text):
         #状态字典的长度为零，表示没有预算需要采集的信息，不用发信
@@ -169,3 +184,19 @@ class Collection():
             return False
 
         return True
+
+    def copy_file_to(self):
+        srcfile = os.path.abspath('data/status.txt')
+        dstfile = self.config.get('spider', 'copy_to_path')
+        if not os.path.isfile(srcfile):
+            print ("%s not exist!"%(srcfile))
+            logging.info(
+                time.strftime('%Y%m%d-%H:%M:%S', time.localtime(time.time())) + ' -->> 源文件不存在。')
+        else:
+            fpath,fname=os.path.split(dstfile)    #分离文件名和路径
+            if not os.path.exists(fpath):
+                os.makedirs(fpath)                #创建路径
+            shutil.copyfile(srcfile,dstfile)      #复制文件
+            #print ("copy %s -> %s"%(srcfile,dstfile))
+            logging.info(
+                time.strftime('%Y%m%d-%H:%M:%S', time.localtime(time.time())) + ' -->> 复制文件成功。')
