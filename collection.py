@@ -174,16 +174,11 @@ class Collection():
                         for i in event_list:
                             stxt.write('#'+i+':'+event_list[i])
                         stxt.write('\n')
-                logging.info(
+            else:
+		        stxt.write('#CDH集群无异常')
+            logging.info(
                     time.strftime('%Y%m%d-%H:%M:%S', time.localtime(time.time())) + ' -->> 数据写入文件完成')
         self.copy_file_to()
-
-    def need_send_mail(self,status_text):
-        #状态字典的长度为零，表示没有预算需要采集的信息，不用发信
-        if len(status_text) == 0:
-            return False
-
-        return True
 
     def copy_file_to(self):
         srcfile = os.path.abspath('data/status.txt')
