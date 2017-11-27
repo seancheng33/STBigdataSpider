@@ -1,46 +1,46 @@
-Êı¾İ²É¼¯Ê±¼ä£º2017-11-22 17:28:48
+æ•°æ®é‡‡é›†æ—¶é—´ï¼š2017-11-22 17:28:48
 HBase
-#ÔËĞĞ×´Ì¬:ÔËĞĞ×´Ì¬Á¼ºÃ#½ÇÉ«ÀàĞÍ:HBase Thrift Server#Ö÷»úÃû:clouderatest2
-#ÔËĞĞ×´Ì¬:ÔËĞĞ×´Ì¬Á¼ºÃ#½ÇÉ«ÀàĞÍ:Master (»î¶¯)#Ö÷»úÃû:clouderatest1
-#ÔËĞĞ×´Ì¬:ÔËĞĞ×´Ì¬Á¼ºÃ#½ÇÉ«ÀàĞÍ:RegionServer#Ö÷»úÃû:clouderatest4
-#ÔËĞĞ×´Ì¬:ÔËĞĞ×´Ì¬Á¼ºÃ#½ÇÉ«ÀàĞÍ:RegionServer#Ö÷»úÃû:clouderatest6
-#ÔËĞĞ×´Ì¬:ÔËĞĞ×´Ì¬Á¼ºÃ#½ÇÉ«ÀàĞÍ:RegionServer#Ö÷»úÃû:clouderatest5
+#è¿è¡ŒçŠ¶æ€:è¿è¡ŒçŠ¶æ€è‰¯å¥½#è§’è‰²ç±»å‹:HBase Thrift Server#ä¸»æœºå:clouderatest2
+#è¿è¡ŒçŠ¶æ€:è¿è¡ŒçŠ¶æ€è‰¯å¥½#è§’è‰²ç±»å‹:Master (æ´»åŠ¨)#ä¸»æœºå:clouderatest1
+#è¿è¡ŒçŠ¶æ€:è¿è¡ŒçŠ¶æ€è‰¯å¥½#è§’è‰²ç±»å‹:RegionServer#ä¸»æœºå:clouderatest4
+#è¿è¡ŒçŠ¶æ€:è¿è¡ŒçŠ¶æ€è‰¯å¥½#è§’è‰²ç±»å‹:RegionServer#ä¸»æœºå:clouderatest6
+#è¿è¡ŒçŠ¶æ€:è¿è¡ŒçŠ¶æ€è‰¯å¥½#è§’è‰²ç±»å‹:RegionServer#ä¸»æœºå:clouderatest5
 HDFS
-#ÔËĞĞ×´Ì¬:ÔËĞĞ×´Ì¬Á¼ºÃ#½ÇÉ«ÀàĞÍ:DataNode#Ö÷»úÃû:clouderatest6
-#ÔËĞĞ×´Ì¬:ÔËĞĞ×´Ì¬Á¼ºÃ#½ÇÉ«ÀàĞÍ:DataNode#Ö÷»úÃû:clouderatest5
-#ÔËĞĞ×´Ì¬:ÔËĞĞ×´Ì¬Á¼ºÃ#½ÇÉ«ÀàĞÍ:DataNode#Ö÷»úÃû:clouderatest4
-#ÔËĞĞ×´Ì¬:ÔËĞĞ×´Ì¬Á¼ºÃ#½ÇÉ«ÀàĞÍ:Failover Controller#Ö÷»úÃû:clouderatest1
-#ÔËĞĞ×´Ì¬:ÔËĞĞ×´Ì¬Á¼ºÃ#½ÇÉ«ÀàĞÍ:Failover Controller#Ö÷»úÃû:clouderatest2
-#ÔËĞĞ×´Ì¬:ÔËĞĞ×´Ì¬Á¼ºÃ#½ÇÉ«ÀàĞÍ:HttpFS#Ö÷»úÃû:clouderatest2
-#ÔËĞĞ×´Ì¬:ÔËĞĞ×´Ì¬Á¼ºÃ#½ÇÉ«ÀàĞÍ:JournalNode#Ö÷»úÃû:clouderatest4
-#ÔËĞĞ×´Ì¬:ÔËĞĞ×´Ì¬Á¼ºÃ#½ÇÉ«ÀàĞÍ:JournalNode#Ö÷»úÃû:clouderatest6
-#ÔËĞĞ×´Ì¬:ÔËĞĞ×´Ì¬Á¼ºÃ#½ÇÉ«ÀàĞÍ:JournalNode#Ö÷»úÃû:clouderatest5
-#ÔËĞĞ×´Ì¬:ÔËĞĞ×´Ì¬Á¼ºÃ#½ÇÉ«ÀàĞÍ:NameNode (»î¶¯)#Ö÷»úÃû:clouderatest1
-#ÔËĞĞ×´Ì¬:ÔËĞĞ×´Ì¬Á¼ºÃ#½ÇÉ«ÀàĞÍ:NameNode (±¸ÓÃ)#Ö÷»úÃû:clouderatest2
+#è¿è¡ŒçŠ¶æ€:è¿è¡ŒçŠ¶æ€è‰¯å¥½#è§’è‰²ç±»å‹:DataNode#ä¸»æœºå:clouderatest6
+#è¿è¡ŒçŠ¶æ€:è¿è¡ŒçŠ¶æ€è‰¯å¥½#è§’è‰²ç±»å‹:DataNode#ä¸»æœºå:clouderatest5
+#è¿è¡ŒçŠ¶æ€:è¿è¡ŒçŠ¶æ€è‰¯å¥½#è§’è‰²ç±»å‹:DataNode#ä¸»æœºå:clouderatest4
+#è¿è¡ŒçŠ¶æ€:è¿è¡ŒçŠ¶æ€è‰¯å¥½#è§’è‰²ç±»å‹:Failover Controller#ä¸»æœºå:clouderatest1
+#è¿è¡ŒçŠ¶æ€:è¿è¡ŒçŠ¶æ€è‰¯å¥½#è§’è‰²ç±»å‹:Failover Controller#ä¸»æœºå:clouderatest2
+#è¿è¡ŒçŠ¶æ€:è¿è¡ŒçŠ¶æ€è‰¯å¥½#è§’è‰²ç±»å‹:HttpFS#ä¸»æœºå:clouderatest2
+#è¿è¡ŒçŠ¶æ€:è¿è¡ŒçŠ¶æ€è‰¯å¥½#è§’è‰²ç±»å‹:JournalNode#ä¸»æœºå:clouderatest4
+#è¿è¡ŒçŠ¶æ€:è¿è¡ŒçŠ¶æ€è‰¯å¥½#è§’è‰²ç±»å‹:JournalNode#ä¸»æœºå:clouderatest6
+#è¿è¡ŒçŠ¶æ€:è¿è¡ŒçŠ¶æ€è‰¯å¥½#è§’è‰²ç±»å‹:JournalNode#ä¸»æœºå:clouderatest5
+#è¿è¡ŒçŠ¶æ€:è¿è¡ŒçŠ¶æ€è‰¯å¥½#è§’è‰²ç±»å‹:NameNode (æ´»åŠ¨)#ä¸»æœºå:clouderatest1
+#è¿è¡ŒçŠ¶æ€:è¿è¡ŒçŠ¶æ€è‰¯å¥½#è§’è‰²ç±»å‹:NameNode (å¤‡ç”¨)#ä¸»æœºå:clouderatest2
 Hive
-#ÔËĞĞ×´Ì¬:ÔËĞĞ×´Ì¬Á¼ºÃ#½ÇÉ«ÀàĞÍ:Hive Metastore Server#Ö÷»úÃû:clouderatest1
-#ÔËĞĞ×´Ì¬:ÔËĞĞ×´Ì¬Á¼ºÃ#½ÇÉ«ÀàĞÍ:HiveServer2#Ö÷»úÃû:clouderatest1
+#è¿è¡ŒçŠ¶æ€:è¿è¡ŒçŠ¶æ€è‰¯å¥½#è§’è‰²ç±»å‹:Hive Metastore Server#ä¸»æœºå:clouderatest1
+#è¿è¡ŒçŠ¶æ€:è¿è¡ŒçŠ¶æ€è‰¯å¥½#è§’è‰²ç±»å‹:HiveServer2#ä¸»æœºå:clouderatest1
 Hue
-#ÔËĞĞ×´Ì¬:ÔËĞĞ×´Ì¬Á¼ºÃ#½ÇÉ«ÀàĞÍ:Hue Server#Ö÷»úÃû:clouderatest2
+#è¿è¡ŒçŠ¶æ€:è¿è¡ŒçŠ¶æ€è‰¯å¥½#è§’è‰²ç±»å‹:Hue Server#ä¸»æœºå:clouderatest2
 Impala
-#ÔËĞĞ×´Ì¬:ÔËĞĞ×´Ì¬Á¼ºÃ#½ÇÉ«ÀàĞÍ:Impala Catalog Server#Ö÷»úÃû:clouderatest1
-#ÔËĞĞ×´Ì¬:ÔËĞĞ×´Ì¬Á¼ºÃ#½ÇÉ«ÀàĞÍ:Impala Daemon#Ö÷»úÃû:clouderatest4
-#ÔËĞĞ×´Ì¬:ÔËĞĞ×´Ì¬Á¼ºÃ#½ÇÉ«ÀàĞÍ:Impala Daemon#Ö÷»úÃû:clouderatest6
-#ÔËĞĞ×´Ì¬:ÔËĞĞ×´Ì¬Á¼ºÃ#½ÇÉ«ÀàĞÍ:Impala Daemon#Ö÷»úÃû:clouderatest5
-#ÔËĞĞ×´Ì¬:ÔËĞĞ×´Ì¬Á¼ºÃ#½ÇÉ«ÀàĞÍ:Impala StateStore#Ö÷»úÃû:clouderatest1
+#è¿è¡ŒçŠ¶æ€:è¿è¡ŒçŠ¶æ€è‰¯å¥½#è§’è‰²ç±»å‹:Impala Catalog Server#ä¸»æœºå:clouderatest1
+#è¿è¡ŒçŠ¶æ€:è¿è¡ŒçŠ¶æ€è‰¯å¥½#è§’è‰²ç±»å‹:Impala Daemon#ä¸»æœºå:clouderatest4
+#è¿è¡ŒçŠ¶æ€:è¿è¡ŒçŠ¶æ€è‰¯å¥½#è§’è‰²ç±»å‹:Impala Daemon#ä¸»æœºå:clouderatest6
+#è¿è¡ŒçŠ¶æ€:è¿è¡ŒçŠ¶æ€è‰¯å¥½#è§’è‰²ç±»å‹:Impala Daemon#ä¸»æœºå:clouderatest5
+#è¿è¡ŒçŠ¶æ€:è¿è¡ŒçŠ¶æ€è‰¯å¥½#è§’è‰²ç±»å‹:Impala StateStore#ä¸»æœºå:clouderatest1
 Oozie
-#ÔËĞĞ×´Ì¬:ÔËĞĞ×´Ì¬Á¼ºÃ#½ÇÉ«ÀàĞÍ:Oozie Server#Ö÷»úÃû:clouderatest3
+#è¿è¡ŒçŠ¶æ€:è¿è¡ŒçŠ¶æ€è‰¯å¥½#è§’è‰²ç±»å‹:Oozie Server#ä¸»æœºå:clouderatest3
 Spark
-#ÔËĞĞ×´Ì¬:ÔËĞĞ×´Ì¬Á¼ºÃ#½ÇÉ«ÀàĞÍ:History Server#Ö÷»úÃû:clouderatest2
+#è¿è¡ŒçŠ¶æ€:è¿è¡ŒçŠ¶æ€è‰¯å¥½#è§’è‰²ç±»å‹:History Server#ä¸»æœºå:clouderatest2
 Sqoop 2
-#ÔËĞĞ×´Ì¬:ÔËĞĞ×´Ì¬Á¼ºÃ#½ÇÉ«ÀàĞÍ:Sqoop 2 Server#Ö÷»úÃû:clouderatest1
+#è¿è¡ŒçŠ¶æ€:è¿è¡ŒçŠ¶æ€è‰¯å¥½#è§’è‰²ç±»å‹:Sqoop 2 Server#ä¸»æœºå:clouderatest1
 YARN (MR2 Included)
-#ÔËĞĞ×´Ì¬:ÔËĞĞ×´Ì¬Á¼ºÃ#½ÇÉ«ÀàĞÍ:JobHistory Server#Ö÷»úÃû:clouderatest3
-#ÔËĞĞ×´Ì¬:ÔËĞĞ×´Ì¬Á¼ºÃ#½ÇÉ«ÀàĞÍ:NodeManager#Ö÷»úÃû:clouderatest4
-#ÔËĞĞ×´Ì¬:ÔËĞĞ×´Ì¬Á¼ºÃ#½ÇÉ«ÀàĞÍ:NodeManager#Ö÷»úÃû:clouderatest6
-#ÔËĞĞ×´Ì¬:ÔËĞĞ×´Ì¬Á¼ºÃ#½ÇÉ«ÀàĞÍ:NodeManager#Ö÷»úÃû:clouderatest5
-#ÔËĞĞ×´Ì¬:ÔËĞĞ×´Ì¬Á¼ºÃ#½ÇÉ«ÀàĞÍ:ResourceManager (»î¶¯)#Ö÷»úÃû:clouderatest1
+#è¿è¡ŒçŠ¶æ€:è¿è¡ŒçŠ¶æ€è‰¯å¥½#è§’è‰²ç±»å‹:JobHistory Server#ä¸»æœºå:clouderatest3
+#è¿è¡ŒçŠ¶æ€:è¿è¡ŒçŠ¶æ€è‰¯å¥½#è§’è‰²ç±»å‹:NodeManager#ä¸»æœºå:clouderatest4
+#è¿è¡ŒçŠ¶æ€:è¿è¡ŒçŠ¶æ€è‰¯å¥½#è§’è‰²ç±»å‹:NodeManager#ä¸»æœºå:clouderatest6
+#è¿è¡ŒçŠ¶æ€:è¿è¡ŒçŠ¶æ€è‰¯å¥½#è§’è‰²ç±»å‹:NodeManager#ä¸»æœºå:clouderatest5
+#è¿è¡ŒçŠ¶æ€:è¿è¡ŒçŠ¶æ€è‰¯å¥½#è§’è‰²ç±»å‹:ResourceManager (æ´»åŠ¨)#ä¸»æœºå:clouderatest1
 ZooKeeper
-#ÔËĞĞ×´Ì¬:ÔËĞĞ×´Ì¬Á¼ºÃ#½ÇÉ«ÀàĞÍ:Server#Ö÷»úÃû:clouderatest1
-#ÔËĞĞ×´Ì¬:ÔËĞĞ×´Ì¬Á¼ºÃ#½ÇÉ«ÀàĞÍ:Server#Ö÷»úÃû:clouderatest3
-#ÔËĞĞ×´Ì¬:ÔËĞĞ×´Ì¬Á¼ºÃ#½ÇÉ«ÀàĞÍ:Server#Ö÷»úÃû:clouderatest2
+#è¿è¡ŒçŠ¶æ€:è¿è¡ŒçŠ¶æ€è‰¯å¥½#è§’è‰²ç±»å‹:Server#ä¸»æœºå:clouderatest1
+#è¿è¡ŒçŠ¶æ€:è¿è¡ŒçŠ¶æ€è‰¯å¥½#è§’è‰²ç±»å‹:Server#ä¸»æœºå:clouderatest3
+#è¿è¡ŒçŠ¶æ€:è¿è¡ŒçŠ¶æ€è‰¯å¥½#è§’è‰²ç±»å‹:Server#ä¸»æœºå:clouderatest2
