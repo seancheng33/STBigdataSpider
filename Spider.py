@@ -1,7 +1,12 @@
-import time, sys, configparser, logging
+import configparser
+import logging
+import sys
+import time
+
 from selenium import webdriver
+
 from collection import Collection
-from sendmail import SendMail
+from send_mail.sendmail import SendMail
 
 logging.basicConfig(filename='logs/' + time.strftime('%Y%m%d', time.localtime(time.time())) + '.log',
                     format='%(asctime)s %(filename)s[line:%(lineno)d] %(levelname)s %(message)s',

@@ -8,7 +8,10 @@ from email.mime.text import MIMEText
 
 class SendMail():
     def __init__(self):
-        logging.basicConfig(filename=time.strftime('%Y%m%d', time.localtime(time.time())) + '.log', level=logging.DEBUG)
+        logging.basicConfig(filename='logs/' + time.strftime('%Y%m%d', time.localtime(time.time())) + '.log',
+                            format='%(asctime)s %(filename)s[line:%(lineno)d] %(levelname)s %(message)s',
+                            datefmt='%a, %d %b %Y %H:%M:%S',
+                            level=logging.DEBUG)
 
         # 读取配置文件 config.ini
         self.config = configparser.ConfigParser()
@@ -23,7 +26,7 @@ class SendMail():
         self.cc_receivers = self.config.get('mail', 'cc_receivers').split(',')  # 抄送名单，转成数组
 
         # 邮件正文内容
-        self.mail_content = MIMEText('<p>附件为运行状态不良的各主机状态,本邮件内容由python脚本自动采集并发送。</p>', 'html', 'utf-8')
+        self.mail_content = MIMEText(self.read_to_content(), 'html', 'utf-8')
         # 三个参数：
         # 第一个为文本内容
         # 第二个 plain 设置文本格式，如果需要HTML格式，修改成 html 即可，正文中的内容需要写成html代码的格式
@@ -41,11 +44,15 @@ class SendMail():
         self.message['Subject'] = Header(subject, 'utf-8')
         self.message.attach(self.mail_content)
 
+        self.add_attach()
+
         # self.att1 = MIMEText(open('data/status.txt','rb').read(),'base64','utf-8')
-        self.att1 = MIMEApplication(open('data/status.txt', 'rb').read())
-        self.att1['Content-Type'] = 'application/octet-stream'
-        self.att1['Content-Disposition'] = 'attachment;filename="status.txt"'
-        self.message.attach(self.att1)
+        # attach_file = self.config.get('attach','attach1')
+        # if attach_file != '':
+        #     self.att1 = MIMEApplication(open(attach_file, 'rb').read())
+        #     self.att1['Content-Type'] = 'application/octet-stream'
+        #     self.att1['Content-Disposition'] = 'attachment;filename="status.txt"'
+        #     self.message.attach(self.att1)
 
     def send(self):
 
@@ -103,3 +110,35 @@ class SendMail():
                 with open('count', 'w') as f:
                     f.write(str(num))
                 return True
+
+    def add_attach(self):
+        attach_num = int(self.config.get('attach','attach_num'))
+        for i in range(1,attach_num+1):
+            attach_file = self.config.get('attach', 'attach'+str(i))
+            if attach_file != '':
+                self.att1 = MIMEApplication(open(attach_file, 'rb').read())
+                self.att1['Content-Type'] = 'application/octet-stream'
+                self.att1['Content-Disposition'] = 'attachment;filename="status.txt"'
+                self.message.attach(self.att1)
+
+    def read_to_content(self):
+        attach_num = int(self.config.get('attach', 'attach_num'))
+        content = '<p>以下正文及附件为运行状态不良的各主机状态:<br /><br />'
+        for i in range(1, attach_num + 1):
+            attach_file = self.config.get('attach', 'attach' + str(i))
+            if attach_file != '':
+                with open(attach_file,'r',encoding='utf-8') as attach_txt:
+                    lines = attach_txt.readlines()
+                    for line in lines:
+                        content = content + line + '<br />'
+                content = content + '<br />'
+            content = content + '<br /><br />本邮件内容由python脚本自动采集并发送。</p>'
+        return content
+
+
+#执行程序发送邮件
+sendMail = SendMail()
+sendMail.send()
+
+#退出脚本
+sys.exit(0)

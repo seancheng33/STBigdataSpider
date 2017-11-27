@@ -151,7 +151,7 @@ class Collection():
         #只有status_text非空，有内容，才会执行文件的写入功能，不然不写入文件
         if len(status_text) !=0:
             # 组合状态的数据，形成一份txt的文档，将其添加为邮件的附件
-            with open(os.path.abspath('data/status.txt'),'w') as stxt:
+            with open(os.path.abspath('data/status.txt'),'w',encoding='utf-8') as stxt:
                 stxt.write('数据采集时间：'+time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(time.time()))+'\n')
                 for item in status_text:
                     stxt.write(item+'\n')
