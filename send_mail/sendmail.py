@@ -44,6 +44,8 @@ class SendMail():
         self.message['Subject'] = Header(subject, 'utf-8')
         self.message.attach(self.mail_content)
 
+        self.add_attach_file = 0 #增加了多少个附件，这个属性如果为零，也是判断为不用发信
+
         self.add_attach()
 
         # self.att1 = MIMEText(open('data/status.txt','rb').read(),'base64','utf-8')
@@ -85,17 +87,22 @@ class SendMail():
             logging.error(time.strftime('%Y%m%d-%H:%M:%S', time.localtime(time.time())) + " -->> Error: 无法发送邮件")
 
     def can_send(self):
+        #如果这次邮件需要添加的附件数为0，也就是说明全部的附件文件都是没有异常的文件，也就表示不用发信，返回不能发信的False
+        if self.add_attach_file == 0:
+            logging.info(time.strftime('%Y%m%d-%H:%M:%S', time.localtime(time.time())) + "  -->> 无异常状态附件添加，邮件不发送")
+            return False
         # 获取文件的修改时间
         mtime = time.strftime('%Y%m%d', time.localtime(os.path.getmtime('count')))
         #获取当前时间
         ntime = time.strftime('%Y%m%d', time.localtime(time.time()))
-        #如果是修改时间不是当天，内容归零，重新计数
+        #如果修改时间不是当天，内容归零，重新计数
         if mtime != ntime:
             with open('count', 'w') as f:
                 f.write('0')
-        #修改时间和现在时间相差不超过15分钟(900秒），即是距离上次发邮件间隔不到15分钟，还不能发信
+
         mtime2 = os.path.getmtime('count')
         ntime2 = time.time()
+        #修改时间和现在时间相差不超过设定的秒数，即是距离上次发邮件间隔达不到设定的秒数，返回不能发信的False
         if (ntime2-mtime2) < int(self.config.get('mail', 'resend_time')):
             logging.info(time.strftime('%Y%m%d-%H:%M:%S', time.localtime(time.time())) + "  -->> 时间间隔未到，邮件不发送")
             return False
@@ -103,7 +110,7 @@ class SendMail():
             with open('count', 'r') as f:
                 num = f.read()
             if int(num) > int(self.config.get('mail', 'max_send')):
-                # 如果计数文件中的内容大于5，表示已经发送过5次邮件，返回不能发信的False
+                # 如果计数文件中的内容大于设定的次数，表示已经发送过设定的次数的邮件，返回不能发信的False
                 logging.info(time.strftime('%Y%m%d-%H:%M:%S', time.localtime(time.time())) +
                              "  -->> 当前发信次数"+num+"，已经达到每天邮件发送的最大次数，邮件不再发送")
                 return False
@@ -119,10 +126,18 @@ class SendMail():
         for i in range(1,attach_num+1):
             attach_file = self.config.get('attach', 'attach'+str(i))
             if attach_file != '':
-                self.att1 = MIMEApplication(open(attach_file, 'rb').read())
-                self.att1['Content-Type'] = 'application/octet-stream'
-                self.att1['Content-Disposition'] = 'attachment;filename="status.txt"'
-                self.message.attach(self.att1)
+                with open(attach_file,'r',encoding='utf-8') as attach_txt:
+                    lines = attach_txt.readlines()
+                    #如果文件中的内容多于两行，就是有异常内容，根据爬虫的写入内容，第一行为爬取的时间，
+                    # 如果没有异常，就只有第二行写入无异常，如果有异常内容，文件内容将是大于两行。
+                    if len(lines) > 2:
+                        self.att1 = MIMEApplication(open(attach_file, 'rb').read())
+                        self.att1['Content-Type'] = 'application/octet-stream'
+                        self.att1['Content-Disposition'] = 'attachment;filename="status.txt"'
+                        self.message.attach(self.att1)
+                        self.add_attach_file +=1
+                    else:
+                        continue
 
     def read_to_content(self):
         attach_num = int(self.config.get('attach', 'attach_num'))
