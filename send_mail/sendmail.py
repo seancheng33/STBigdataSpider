@@ -15,8 +15,8 @@ class SendMail():
 
         # 读取配置文件 config.ini
         self.config = configparser.ConfigParser()
-        config_file = open("config.ini", 'r')
-        self.config.read_file(config_file)
+        self.config_file = open("config.ini", 'r')
+        self.config.read_file(self.config_file)
 
         self.mail_host = self.config.get('mail', 'mail_host')# 服务器
         self.mail_user = self.config.get('mail', 'mail_name') # 用户名
@@ -123,35 +123,79 @@ class SendMail():
 
     def add_attach(self):
         attach_num = int(self.config.get('attach','attach_num'))
+        last_time = self.get_attach_mtime()
+        new_mtime = []
         for i in range(1,attach_num+1):
             attach_file = self.config.get('attach', 'attach'+str(i))
+            attach_filename = os.path.basename(attach_file)
+
             if attach_file != '':
-                with open(attach_file,'r',encoding='utf-8') as attach_txt:
-                    lines = attach_txt.readlines()
-                    #如果文件中的内容多于两行，就是有异常内容，根据爬虫的写入内容，第一行为爬取的时间，
-                    # 如果没有异常，就只有第二行写入无异常，如果有异常内容，文件内容将是大于两行。
-                    if len(lines) > 2:
-                        self.att1 = MIMEApplication(open(attach_file, 'rb').read())
-                        self.att1['Content-Type'] = 'application/octet-stream'
-                        self.att1['Content-Disposition'] = 'attachment;filename="status.txt"'
-                        self.message.attach(self.att1)
-                        self.add_attach_file +=1
-                    else:
-                        continue
+                mtime = str(os.path.getmtime(attach_file))
+                new_mtime.append(mtime)
+                # 取出文件中对应位置的最后修改时间，如果文件中没有对应的时间，列表下标越位，就将改数设为零，
+                # 因为该附件是新添加的，未曾有最后修改时间
+                try:
+                    ltime = last_time[i-1]
+                except:
+                    ltime = '0'
+
+                if ltime == mtime:
+                    continue
+                else:
+                    with open(attach_file,'r',encoding='utf-8') as attach_txt:
+                        lines = attach_txt.readlines()
+
+                        #如果文件中的内容多于两行，就是有异常内容，根据爬虫的写入内容，第一行为爬取的时间，
+                        # 如果没有异常，就只有第二行写入无异常，如果有异常内容，文件内容将是大于两行。
+                        if len(lines) > 2:
+                            self.att1 = MIMEApplication(open(attach_file, 'rb').read())
+                            self.att1['Content-Type'] = 'application/octet-stream'
+                            self.att1['Content-Disposition'] = 'attachment;filename='+attach_filename
+                            self.message.attach(self.att1)
+                            self.add_attach_file +=1
+                        else:
+                            continue
+        with open('lastfile', 'w', encoding='utf-8') as ltimetxt:
+            ltimetxt.write(','.join(new_mtime))
 
     def read_to_content(self):
+        last_time = self.get_attach_mtime()
+        new_mtime = []
         attach_num = int(self.config.get('attach', 'attach_num'))
         content = '<p>以下正文及附件为运行状态不良的各主机状态:<br /><br />'
         for i in range(1, attach_num + 1):
             attach_file = self.config.get('attach', 'attach' + str(i))
             if attach_file != '':
-                with open(attach_file,'r',encoding='utf-8') as attach_txt:
-                    lines = attach_txt.readlines()
-                    for line in lines:
-                        content = content + line + '<br />'
-                content = content + '<br />'
-            content = content + '<br /><br />本邮件内容由python脚本自动采集并发送。</p>'
+                mtime = str(os.path.getmtime(attach_file))
+                new_mtime.append(mtime)
+
+                try:
+                    ltime = last_time[i - 1]
+                except:
+                    ltime = '0'
+
+                if ltime == mtime:
+                    continue
+                else:
+                    with open(attach_file,'r',encoding='utf-8') as attach_txt:
+                        lines = attach_txt.readlines()
+                        for line in lines:
+                            content = content + line + '<br />'
+                    content = content + '<br />'
+
+        content = content + '<br /><br />本邮件内容由python脚本自动采集并发送。</p>'
         return content
+
+    def get_attach_mtime(self):
+        #如果文件不存在，赋值最后修改时间为空，后面在添加了附件后，会创建该文件并写入内容
+        if not os.path.isfile('lastfile'):
+            last_time = []
+        else:
+            #打开文件，获取附件的修改时间，保存为一个列表
+            with open('lastfile', 'r', encoding='utf-8') as ltimetxt:
+                last_time = ltimetxt.read().strip(',').split(',')
+            #print(last_time)
+        return last_time
 
 
 #执行程序发送邮件
