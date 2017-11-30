@@ -29,7 +29,6 @@ class CollectionZabbix():
                 "password": passwd
             },
             "id": 0
-
         }
 
         request = requests.post(url=self.url, headers=self.headers, data=json.dumps(data))
@@ -56,17 +55,11 @@ class CollectionZabbix():
         # 将返回的结果集是json格式，需要做处理
         dict = json.loads(output.text)
         #取出result中的值，这个才是需要的结果
-        results = dict['result']
-        #先建立一个数组来存放需要的群组id
-        groupid = []
-        #遍历结果，取groupid的值
-        for result in results:
-            groupid.append(result['groupid'])
-        return groupid
+        return dict['result']
 
-    def get_group_one(self):
+    def get_group_one(self,groupid):
         #获取主机ID
-        groupid = self.get_group_id()
+        #groupid = self.get_group_id()
         data = {
             "jsonrpc": "2.0",
             "method": "host.get",
@@ -79,43 +72,20 @@ class CollectionZabbix():
         }
         output = requests.post(url=self.url, headers=self.headers, data=json.dumps(data))
         dict = json.loads(output.text)
-        # 取出result中的值，这个才是需要的结果
-        results = dict['result']
-        # 先建立一个数组来存放需要的群组id
-        hostid = []
-        # 遍历结果，取groupid的值
-        for result in results:
-            hostid.append(result['hostid'])
-        return hostid
+        return dict['result'] # 返回result中的值，这个才是需要的结果
 
-    # def get_host_graph(self,auth):
-    #     data = {
-    #         "jsonrpc": "2.0",
-    #         "method": "graph.get",
-    #         "params": {
-    #             "output": ["graphid","name"],
-    #             "hostids": "10084",
-    #         },
-    #         "auth": auth,
-    #         "id": 1
-    #     }
-    #     output = requests.post(url=self.url, headers=self.headers, data=json.dumps(data))
-    #     dict = json.loads(output.text)
-    #     return dict['result']
-
-    def get_host_itemsid(self):
+    def get_host_itemsid(self,hostid,filtername,filtervalue):
         #hostid = self.get_group_one()
         data = {
             "jsonrpc": "2.0",
             "method": "item.get",
             "params": {
                 "output": ["itemhid","name","key_"],
-                "hostids": "10084",
+                "hostids": hostid,
                 "sortfield": "name",
                 #用key_的值作为搜索的条件，比用name更精准
                 "search":{
-                    "name":"Free disk space on $1"
-                    #"key_":"vfs.fs.size[/,free]",
+                    filtername:filtervalue,
                 },
             },
             "auth": self.getToken(),
@@ -125,50 +95,160 @@ class CollectionZabbix():
         dict = json.loads(output.text)
         return dict['result']
 
-    def get_host_history(self):
+    def get_cpuload_history(self,itemids):
+        # CPU的数据是float，history返回的对象需要是float，所以独立一个函数
         data = {
             "jsonrpc": "2.0",
             "method": "history.get",
             "params": {
                 "output": "extend",
-                "history": 3,
+                "history": 0, #CPU的数据是float，这个需要改成0
                 #根据zabbix的api，history有5个值，默认值是3，
                 # 其他的分别是0 - numeric float; 1 - character; 2 - log; 3 - numeric unsigned; 4 - text.
-                "itemids": "25973",
-                "limit": 10
+                "itemids": itemids,
+                "limit": 1
             },
             "auth": self.getToken(),
             "id": 1
         }
         output = requests.post(url=self.url, headers=self.headers, data=json.dumps(data))
         dict = json.loads(output.text)
-        return dict['result']
+        result = dict['result']
+        value = result['value']
+        return value
 
-    def dict_name(self):
-        #计较常用的一些需要获取的信息对应的“key_"的值
-        dict = ["vm.memory.size[available]",#可用内存
-                "system.cpu.load[percpu,avg1]",#CPU使用率，1分钟
-                "system.cpu.load[percpu,avg5]",#CPU使用率，5分钟
-                "system.cpu.load[percpu,avg15]",#CPU使用率，15分钟
-                "vfs.fs.size[/,free]",# 根目录的剩余空间，数值除以1024得到的单位是KB,要得到GB为单位的话，需要除以3次1024
-                "vfs.fs.size[/,used]",# 根目录的已用空间，要得到GB为单位的话，需要除以3次1024
-                "net.if.in[eth0]",#网卡1的网络接收
-                "net.if.in[eth1]",#网卡2的网络接收
-                "net.if.in[eth2]",#网卡3的网络接收
-                "net.if.in[eth3]",#网卡4的网络接收
-                "net.if.out[eth0]",#网卡1的网络发送
-                "net.if.out[eth1]",#网卡2的网络发送
-                "net.if.out[eth2]",#网卡3的网络发送
-                "net.if.out[eth3]",#网卡4的网络发送
-                ]
-        return dict
+    def get_memory_history(self,itemids):
+        #获取内存和磁盘空间等的历史数据。返回类型是int
+        data = {
+            "jsonrpc": "2.0",
+            "method": "history.get",
+            "params": {
+                "output": "extend",
+                "history": 3, #CPU的数据是float，这个需要改成0
+                #根据zabbix的api，history有5个值，默认值是3，
+                # 其他的分别是0 - numeric float; 1 - character; 2 - log; 3 - numeric unsigned; 4 - text.
+                "itemids": itemids,
+                "limit": 1
+            },
+            "auth": self.getToken(),
+            "id": 1
+        }
+        output = requests.post(url=self.url, headers=self.headers, data=json.dumps(data))
+        dict = json.loads(output.text)
+        values = []
+        # 遍历结果，取值
+        for result in dict['result']:
+            value = int(result['value'])/1024/1024/1024 #得到GB单位的数值
+            values.append(float('%.2f' % value))
+        return values
 
+    def get_eth_history(self,itemids):
+
+        #获取内存和磁盘空间等的历史数据。返回类型是int
+        data = {
+            "jsonrpc": "2.0",
+            "method": "history.get",
+            "params": {
+                "output": "extend",
+                "history": 3, #CPU的数据是float，这个需要改成0
+                #根据zabbix的api，history有5个值，默认值是3，
+                # 其他的分别是0 - numeric float; 1 - character; 2 - log; 3 - numeric unsigned; 4 - text.
+                "itemids": itemids ,
+                "limit": 1
+            },
+            "auth": self.getToken(),
+            "id": 1
+        }
+        output = requests.post(url=self.url, headers=self.headers, data=json.dumps(data))
+        dict = json.loads(output.text)
+        values = []
+        # 遍历结果，取值
+        for result in dict['result']:
+            value = int(result['value'])/1000/1000 #得到Mbps单位的数值
+            values.append(float('%.2f' % value))
+        return values
+
+    def get_host_free_disk_space_itemid(self, hostid):
+        # 获取可用磁盘空间的itemid，因为这里需要比较复杂的差集计算，去掉一些不需要的内容，并且磁盘可用是多个的，独立出来另外计算id
+        # 但是会调用到获取get_host_itemsid
+        fds = zabbix.get_host_itemsid(hostid, "name", "Free disk space on $1")
+        fds2 = zabbix.get_host_itemsid(hostid, "name", "Free disk space on $1 (percentage)")
+
+        fds3 = [item for item in fds if item not in fds2]
+        for fd in fds3:
+            if fd['key_'] == 'vfs.fs.size[/boot,free]':
+                fds3.remove(fd)
+        fdsid = []
+        for fd in fds3:
+            fdsid.append(fd['itemid'])
+
+        return fdsid
+
+
+    def change_to_itemid(self,results):
+        itemids = []
+        for result in results:
+            itemids.append(result['itemid'])
+        return itemids
 
 
 zabbix = CollectionZabbix()
 
-print(zabbix.get_group_id())
-print(zabbix.get_group_one())
-#print(get_host_graph(auth))
-print(zabbix.get_host_itemsid())
-print(zabbix.get_host_history())
+group_list = zabbix.get_group_id()
+
+for group in group_list:
+    groupid = group['groupid']
+    groupname = group['name']
+    print("主机群组："+groupname)
+    host_list = zabbix.get_group_one(groupid)
+    #print(host_list)
+    for host in host_list:
+        hostid = host['hostid']
+        hostname = host['name']
+        memory_itemsid = zabbix.get_host_itemsid(hostid,'key_','vm.memory.size[available]')
+        memory_itemsid = zabbix.change_to_itemid(memory_itemsid)
+        cpu1_itemsid = zabbix.get_host_itemsid(hostid, 'key_', 'system.cpu.load[percpu,avg1]')
+        cpu1_itemsid = zabbix.change_to_itemid(cpu1_itemsid)
+        cpu5_itemsid = zabbix.get_host_itemsid(hostid, 'key_', 'system.cpu.load[percpu,avg5]')
+        cpu5_itemsid = zabbix.change_to_itemid(cpu5_itemsid)
+        cpu15_itemsid = zabbix.get_host_itemsid(hostid, 'key_', 'system.cpu.load[percpu,avg15]')
+        cpu15_itemsid = zabbix.change_to_itemid(cpu15_itemsid)
+        free_disk_space_itemsid = zabbix.get_host_free_disk_space_itemid(hostid)
+
+        memory = zabbix.get_memory_history(memory_itemsid)
+        cpu1 = zabbix.get_cpuload_history(cpu1_itemsid)
+        cpu5 = zabbix.get_cpuload_history(cpu5_itemsid)
+        cpu15 = zabbix.get_cpuload_history(cpu15_itemsid)
+        ethio = zabbix.get_eth_history(hostid)
+        free_disk_spaces = ''
+        for i in free_disk_space_itemsid:
+            free_disk_space = zabbix.get_memory_history(i)
+            free_disk_spaces += str(free_disk_space) +" GB "
+
+        eth_in_itemsid = zabbix.get_host_itemsid(hostid,'key_','net.if.in[e')
+        eth_in_itemsid = zabbix.change_to_itemid(eth_in_itemsid)
+
+        eth_out_itemsid = zabbix.get_host_itemsid(hostid, 'key_', 'net.if.out[e')
+        eth_out_itemsid = zabbix.change_to_itemid(eth_out_itemsid)
+
+        eth_in = zabbix.get_eth_history(eth_in_itemsid)
+        eth_out = zabbix.get_eth_history(eth_out_itemsid)
+
+        text = '''主机名：HOSTNAME;可用物理内存：MEMORY GB; CPU平均负载（1分钟 5分钟 15分钟）：CPU1% CPU5% CPU15%;可用磁盘空间：FDS;网络传输： 发送：ETHOUT Mbps 接收：ETHIN Mbps'''
+        text = text.replace('HOSTNAME',str(hostname))
+        text = text.replace('MEMORY', str(memory))
+        text = text.replace('CPU1', str(cpu1))
+        text = text.replace('CPU5', str(cpu5))
+        text = text.replace('CPU15', str(cpu15))
+        text = text.replace('FDS', str(free_disk_spaces))
+        text = text.replace('ETHOUT', str(eth_out))
+        text = text.replace('ETHIN', str(eth_in))
+
+        print(text)
+
+
+
+        # print("主机名："+str(hostname)+";可用物理内存："+str(memory)+
+        #       "GB;CPU平均负载（1分钟 5分钟 15分钟）："+str(cpu1)+"% "+str(cpu5)+"% "+str(cpu15)+
+        #       "%;可用磁盘空间："+str(free_disk_spaces)+
+        #       ";网络传输： 发送："+str(eth_out)+ "Mbps 接收："+str(eth_in)+"Mbps")
