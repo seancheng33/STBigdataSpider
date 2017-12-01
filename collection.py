@@ -115,7 +115,7 @@ class Collection():
                                 #
                                 sList.append(tmpDict)
                     if len(sList) != 0:
-                        print(sList)
+                        #print(sList)
                         statList[status['name']] = sList
 
                     logging.info(
@@ -164,10 +164,11 @@ class Collection():
         return html_table
 
     def status_writer_to_file(self, status_text):
+        file_name = 'status.txt'
         # 组合状态的数据，形成一份txt的文档，将其添加为邮件的附件
-        with open(os.path.abspath('data/status.txt'),'w',encoding='utf-8') as stxt:
+        with open(os.path.abspath('data/'+file_name),'w',encoding='utf-8') as stxt:
             stxt.write('数据采集时间：'+time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(time.time()))+'\n')
-            if status_text !='':
+            if len(status_text) > 0:
                 for item in status_text:
                     stxt.write(item+'\n')
                     for event_list in status_text[item]:
@@ -175,14 +176,15 @@ class Collection():
                             stxt.write('#'+i+':'+event_list[i])
                         stxt.write('\n')
             else:
-		        stxt.write('#CDH集群无异常')
-            logging.info(
-                    time.strftime('%Y%m%d-%H:%M:%S', time.localtime(time.time())) + ' -->> 数据写入文件完成')
-        self.copy_file_to()
+                stxt.write('#CDH集群无异常')
 
-    def copy_file_to(self):
-        srcfile = os.path.abspath('data/status.txt')
-        dstfile = self.config.get('spider', 'copy_to_path')
+        logging.info(
+                    time.strftime('%Y%m%d-%H:%M:%S', time.localtime(time.time())) + ' -->> 数据写入文件完成')
+        self.copy_file_to(file_name)
+
+    def copy_file_to(self, filename):
+        srcfile = os.path.abspath('data/'+filename)
+        dstfile = self.config.get('spider', 'copy_to_path')+ filename
         if not os.path.isfile(srcfile):
             print ("%s not exist!"%(srcfile))
             logging.info(
