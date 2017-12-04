@@ -11,37 +11,37 @@ class CollectionCDH():
                             datefmt='%a, %d %b %Y %H:%M:%S',
                             level=logging.DEBUG)
 
-        # 读取配置文件 config.ini
-        self.config = configparser.ConfigParser()
-        self.config_file = open("config.ini", 'r')
-        self.config.read_file(self.config_file)
+        # # 读取配置文件 config.ini
+        # self.config = configparser.ConfigParser()
+        # self.config_file = open("config.ini", 'r')
+        # self.config.read_file(self.config_file)
 
         self.cpuload_list = []
         self.disk_list = []
         self.memory_list = []
 
-    def openurl_and_login(self, url, username, password):
-
-        self.browser.get(url)
-        logging.info(time.strftime('%Y%m%d-%H:%M:%S', time.localtime(time.time())) + ' -->> 打开网址成功。')
-
-        try:
-            self.login_to(username, password)
-        except selenium.common.exceptions.NoSuchElementException:
-            # 如果报错说没有找到页面元素，刷新浏览器后再重新执行登陆
-            logging.warning(time.strftime('%Y%m%d-%H:%M:%S', time.localtime(time.time())) + ' -->> 页面获取元素失败，刷新页面。')
-            self.browser.refresh()
-            self.login_to(username, password)
-
-        logging.info(time.strftime('%Y%m%d-%H:%M:%S', time.localtime(time.time())) + ' -->> 登陆成功。')
-        # 停3秒，让页面可以读取数据完整
-        time.sleep(3)
-
-    def login_to(self, username, password):
-        # 登录到系统中
-        self.browser.find_element_by_id("username").send_keys(username)
-        self.browser.find_element_by_id("password").send_keys(password)
-        self.browser.find_element_by_name("submit").click()
+    # def openurl_and_login(self, url, username, password):
+    #
+    #     self.browser.get(url)
+    #     logging.info(time.strftime('%Y%m%d-%H:%M:%S', time.localtime(time.time())) + ' -->> 打开网址成功。')
+    #
+    #     try:
+    #         self.login_to(username, password)
+    #     except selenium.common.exceptions.NoSuchElementException:
+    #         # 如果报错说没有找到页面元素，刷新浏览器后再重新执行登陆
+    #         logging.warning(time.strftime('%Y%m%d-%H:%M:%S', time.localtime(time.time())) + ' -->> 页面获取元素失败，刷新页面。')
+    #         self.browser.refresh()
+    #         self.login_to(username, password)
+    #
+    #     logging.info(time.strftime('%Y%m%d-%H:%M:%S', time.localtime(time.time())) + ' -->> 登陆成功。')
+    #     # 停3秒，让页面可以读取数据完整
+    #     time.sleep(3)
+    #
+    # def login_to(self, username, password):
+    #     # 登录到系统中
+    #     self.browser.find_element_by_id("username").send_keys(username)
+    #     self.browser.find_element_by_id("password").send_keys(password)
+    #     self.browser.find_element_by_name("submit").click()
 
 #获取一些首页的信息
     def home_info(self):
