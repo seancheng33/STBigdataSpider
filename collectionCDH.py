@@ -64,6 +64,7 @@ class CollectionCDH():
         return home_list
 
     def all_host_info(self):
+
         info_list = []
         # 点击最上面的菜单，主机->所有主机，进入到页面
         self.browser.find_element_by_link_text("主机").click()
@@ -83,17 +84,27 @@ class CollectionCDH():
             memory = lstats[8].text.split('/')  # 物理内存
 
             info_list.append(
-                '主机名称:' + name + '；CPU负载(15分钟):' + cpuload[2] + '；已用磁盘空间:' + disk[0].rstrip() + '；已用物理内存：' + memory[
-                    0].rstrip())
+                '主机名称:' + name + '；CPU负载(15分钟):' + cpuload[2] + '；已用磁盘空间:' + disk[0].rstrip()+
+                '；总磁盘空间:' + disk[1].rstrip() + '；已用物理内存：' + memory[0].rstrip()+
+                '；总物理内存：' + memory[1].rstrip())
+
+            #磁盘空间需要把TB换算成GB
+            if 'TiB' in disk[0]:
+                #字段中包含TiB，表示是TB为单位，乘以1024换算成GB
+                disk_free =  float(disk[0].rstrip().rstrip('TiB'))*1024
+            elif 'GiB' in disk[0]:
+                # 字段中包含GiB，不用换算，直接赋值
+                disk_free = disk[0].rstrip().rstrip('GiB')
+
             # 将数值添加到列表，后面拿这个来计算平均值
             self.cpuload_list.append(cpuload[2])
-            self.disk_list.append(disk[0].strip().rstrip('GiB'))  # 删除空格和GiB字符，剩下字符串的数字
+            self.disk_list.append(disk_free)  # 删除空格和GiB字符，剩下字符串的数字
             self.memory_list.append(memory[0].strip().rstrip('GiB'))
         logging.info(time.strftime('%Y%m%d-%H:%M:%S', time.localtime(time.time())) + ' -->> 收集所有主机数据完成。')
         return info_list
 
     def average(self, list):
-        # 取平均值，方法很多，先用最简单的方法，相加后求值,这样可用不用导入类似numpy之类的外部库
+        # 取平均值，方法很多，先用最简单的方法，相加后求值,这样可用不用导入类似pynum之类的外部库
         sum = 0.0
         list_num = len(list)
         for num in list:
@@ -106,8 +117,8 @@ class CollectionCDH():
         cpuload_average = self.average(self.cpuload_list)
         disk_average = self.average(self.disk_list)
         memory_average = self.average(self.memory_list)
-        average = '群集CPU负载平均值:' + str(cpuload_average) + '%；群集已用磁盘空间平均值:' \
-                  + str(disk_average) + ' GiB；群集已用物理内存平均值:' + str(memory_average) + ' GiB。'
+        average = '群集CPU负载平均值:' + str(cpuload_average) + '%；群集已用磁盘空间平均值:' +\
+                  str(disk_average) + ' GiB；群集已用物理内存平均值:' + str(memory_average) + ' GiB。'
         return average
 
     def writer_to_file(self, info_text):

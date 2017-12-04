@@ -49,10 +49,12 @@ try:
     #需要发信的同时才将数据写到文件中
     spiderbrowser.status_writer_to_file(statusList)
     logging.info(time.strftime('%Y%m%d-%H:%M:%S', time.localtime(time.time())) + ' -->> CDH异常状态数据写入文件流程')
-except:
-    logging.error(time.strftime('%Y%m%d-%H:%M:%S', time.localtime(time.time())) + ' -->> 进入数据写入文件流程')
+except Exception as error:
+    logging.error(time.strftime('%Y%m%d-%H:%M:%S', time.localtime(time.time())) + ' -->> 脚本异常')
+    logging.error(time.strftime('%Y%m%d-%H:%M:%S', time.localtime(time.time())) + ' -->> 异常内容：'+ error )
 finally:
-    #加个退出，确保脚本有被退出，避免脚本残留系统消耗资源
+    #确保浏览器有被退出，避免浏览器因为脚本的异常退出而残留系统消耗资源
     browser.quit()
     logging.info(time.strftime('%Y%m%d-%H:%M:%S', time.localtime(time.time())) + ' -->> 退出浏览器')
+    #加个退出，确保脚本有被退出，避免脚本残留系统消耗资源
     sys.exit(0)
