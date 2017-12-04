@@ -123,22 +123,22 @@ class Collection():
                             'name'] + '数据完成')
         return statList
 
-    def status_name(self, statustype):
-        # 字典内容根据分析css表及页面得到以下内容，主要是用三个状态，红色、绿色、黄色
-        # 红色是cm-icon-status-bad-health，绿色是cm-icon-status-good-health，黄色是cm-icon-status-concerning-health
-        status = {'cm-icon-status-unknown': '未知',
-                  'cm-icon-status-history-not-available': '历史记录不可用',
-                  'cm-icon-status-down': '停止',
-                  'cm-icon-status-stopping': '正在停止',
-                  'cm-icon-status-starting': '正在启动',
-                  'cm-icon-status-disabled-health': '已禁用的运行状况',
-                  'cm-icon-status-stopped': '已停止',
-                  'cm-icon-status-none': '无',
-                  'cm-icon-status-unknown-health': '未知运行状况',
-                  'cm-icon-status-bad-health': '运行状况不良',
-                  'cm-icon-status-good-health': '运行状态良好',
-                  'cm-icon-status-concerning-health': '存在隐患的运行状况'}
-        return status[statustype]
+    # def status_name(self, statustype):
+    #     # 字典内容根据分析css表及页面得到以下内容，主要是用三个状态，红色、绿色、黄色
+    #     # 红色是cm-icon-status-bad-health，绿色是cm-icon-status-good-health，黄色是cm-icon-status-concerning-health
+    #     status = {'cm-icon-status-unknown': '未知',
+    #               'cm-icon-status-history-not-available': '历史记录不可用',
+    #               'cm-icon-status-down': '停止',
+    #               'cm-icon-status-stopping': '正在停止',
+    #               'cm-icon-status-starting': '正在启动',
+    #               'cm-icon-status-disabled-health': '已禁用的运行状况',
+    #               'cm-icon-status-stopped': '已停止',
+    #               'cm-icon-status-none': '无',
+    #               'cm-icon-status-unknown-health': '未知运行状况',
+    #               'cm-icon-status-bad-health': '运行状况不良',
+    #               'cm-icon-status-good-health': '运行状态良好',
+    #               'cm-icon-status-concerning-health': '存在隐患的运行状况'}
+    #     return status[statustype]
 
     def status_table(self, text):
         # 组合状态的数据，形成一份table的表格形式，将插入在邮件的正文中

@@ -1,6 +1,5 @@
-import configparser,logging,shutil,time,sys,os,selenium
+import configparser,logging,shutil,time,os,selenium
 from bs4 import BeautifulSoup
-from selenium import webdriver
 
 class CollectionCDH():
     def __init__(self, browser):
@@ -11,37 +10,14 @@ class CollectionCDH():
                             datefmt='%a, %d %b %Y %H:%M:%S',
                             level=logging.DEBUG)
 
-        # # 读取配置文件 config.ini
-        # self.config = configparser.ConfigParser()
-        # self.config_file = open("config.ini", 'r')
-        # self.config.read_file(self.config_file)
+        # 读取配置文件 config.ini
+        self.config = configparser.ConfigParser()
+        self.config_file = open("config.ini", 'r')
+        self.config.read_file(self.config_file)
 
         self.cpuload_list = []
         self.disk_list = []
         self.memory_list = []
-
-    # def openurl_and_login(self, url, username, password):
-    #
-    #     self.browser.get(url)
-    #     logging.info(time.strftime('%Y%m%d-%H:%M:%S', time.localtime(time.time())) + ' -->> 打开网址成功。')
-    #
-    #     try:
-    #         self.login_to(username, password)
-    #     except selenium.common.exceptions.NoSuchElementException:
-    #         # 如果报错说没有找到页面元素，刷新浏览器后再重新执行登陆
-    #         logging.warning(time.strftime('%Y%m%d-%H:%M:%S', time.localtime(time.time())) + ' -->> 页面获取元素失败，刷新页面。')
-    #         self.browser.refresh()
-    #         self.login_to(username, password)
-    #
-    #     logging.info(time.strftime('%Y%m%d-%H:%M:%S', time.localtime(time.time())) + ' -->> 登陆成功。')
-    #     # 停3秒，让页面可以读取数据完整
-    #     time.sleep(3)
-    #
-    # def login_to(self, username, password):
-    #     # 登录到系统中
-    #     self.browser.find_element_by_id("username").send_keys(username)
-    #     self.browser.find_element_by_id("password").send_keys(password)
-    #     self.browser.find_element_by_name("submit").click()
 
 #获取一些首页的信息
     def home_info(self):
@@ -158,46 +134,3 @@ class CollectionCDH():
             logging.info(
                 time.strftime('%Y%m%d-%H:%M:%S', time.localtime(time.time())) + ' -->> 复制文件成功。')
 
-# # 读取配置文件 config.ini
-# config = configparser.ConfigParser()
-# config_file = open("config.ini", 'r')
-# config.read_file(config_file)
-#
-# url = config.get('spider', 'url')
-# username = config.get('spider', 'username')
-# password = config.get('spider', 'password')
-# #配置文件读出来的值都是字符串类型，要做其他类型使用，需要做类型转化
-# guibrowser = config.get('spider', 'guibrowser')
-# #判断是使用什么浏览器插件，True是有gui的chrome，False是无gui的phantomjs
-# if guibrowser == str(True):
-#     browser = webdriver.Chrome(executable_path='chromedriver.exe')
-# else:
-#     cap = webdriver.DesiredCapabilities.PHANTOMJS
-#     cap["phantomjs.page.settings.resourceTimeout"] = 100
-#     cap["phantomjs.page.settings.userAgent"] = (
-#         "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/61.0.3163.100 Safari/537.36")
-#     browser = webdriver.PhantomJS(executable_path='phantomjs.exe', desired_capabilities=cap)
-#     #要设定浏览器的大小，不然被认为是收集的浏览页面大小，会后面报错找不到输入框。原因未知，待测试排查。
-#     browser.set_window_size(1366,768)
-#
-# try:
-#     spiderbrowser = CollectionCDH(browser)
-#     spiderbrowser.openurl_and_login(url, username, password)
-#     home_info = spiderbrowser.home_info()
-#     host_info = spiderbrowser.all_host_info()
-#     average = spiderbrowser.average_to_file()
-#
-#     context = home_info+host_info
-#     context.append(average)
-#     spiderbrowser.writer_to_file(context)
-#
-#
-#     # 用有GUI的浏览器时，才需要用到这个休眠，测试时可以看退出前是否是已经浏览到正确的页面
-#     time.sleep(1)
-# except:
-#     print('异常信息。')
-# finally:
-#     #就算抛异常，也确保可以关掉浏览器
-#     browser.quit()
-#     #加个退出，确保脚本有被退出，避免脚本残留系统消耗资源
-#     sys.exit(0)
