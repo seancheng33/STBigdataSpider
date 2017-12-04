@@ -1,19 +1,12 @@
-import configparser
-import logging
-import shutil
-import time,sys
-
-import os
-import selenium
+import configparser,logging,shutil,time,sys,os,selenium
 from bs4 import BeautifulSoup
 from selenium import webdriver
 
-
-class CollectionCHD():
+class CollectionCDH():
     def __init__(self, browser):
         self.browser = browser
 
-        logging.basicConfig(filename='logs/chd' + time.strftime('%Y%m%d', time.localtime(time.time())) + '.log',
+        logging.basicConfig(filename='logs/' + time.strftime('%Y%m%d', time.localtime(time.time())) + '.log',
                             format='%(asctime)s %(filename)s[line:%(lineno)d] %(levelname)s %(message)s',
                             datefmt='%a, %d %b %Y %H:%M:%S',
                             level=logging.DEBUG)
@@ -51,12 +44,12 @@ class CollectionCHD():
         self.browser.find_element_by_name("submit").click()
 
 #获取一些首页的信息
-    def home_info(self,browser):
+    def home_info(self):
         home_list = []
-        text1 = browser.find_elements_by_xpath('//*[@id="charts-view-id"]/div[1]/div/div/div[5]')
-        text2 = browser.find_elements_by_xpath('//*[@id="charts-view-id"]/div[2]/div/div/div[5]')
-        text3 = browser.find_elements_by_xpath('//*[@id="charts-view-id"]/div[3]/div/div/div[5]')
-        text4 = browser.find_elements_by_xpath('//*[@id="charts-view-id"]/div[4]/div/div/div[5]')
+        text1 = self.browser.find_elements_by_xpath('//*[@id="charts-view-id"]/div[1]/div/div/div[5]')
+        text2 = self.browser.find_elements_by_xpath('//*[@id="charts-view-id"]/div[2]/div/div/div[5]')
+        text3 = self.browser.find_elements_by_xpath('//*[@id="charts-view-id"]/div[3]/div/div/div[5]')
+        text4 = self.browser.find_elements_by_xpath('//*[@id="charts-view-id"]/div[4]/div/div/div[5]')
 
         home_list.append('群集 CPU')
         for d in text1:
@@ -93,14 +86,14 @@ class CollectionCHD():
         logging.info(time.strftime('%Y%m%d-%H:%M:%S', time.localtime(time.time())) + ' -->> 收集首页数据完成。')
         return home_list
 
-    def all_host_info(self,browser):
+    def all_host_info(self):
         info_list = []
         # 点击最上面的菜单，主机->所有主机，进入到页面
-        browser.find_element_by_link_text("主机").click()
-        browser.find_element_by_link_text("所有主机").click()
+        self.browser.find_element_by_link_text("主机").click()
+        self.browser.find_element_by_link_text("所有主机").click()
         time.sleep(1)
 
-        data = browser.find_elements_by_xpath('//*[@id="hostsForm"]/div/div[2]/div[3]/table/tbody/tr')
+        data = self.browser.find_elements_by_xpath('//*[@id="hostsForm"]/div/div[2]/div[3]/table/tbody/tr')
 
         for d in data[3:]:
             tr = d.get_attribute('innerHTML')
@@ -139,7 +132,7 @@ class CollectionCHD():
         return average
 
     def writer_to_file(self, info_text):
-        file_name = 'status2.txt'
+        file_name = 'CDHstatus.txt'
         # 组合状态的数据，形成一份txt的文档，将其添加为邮件的附件
         with open(os.path.abspath('data/'+file_name),'w',encoding='utf-8') as stxt:
             stxt.write('数据采集时间：'+time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(time.time()))+'\n')
@@ -165,42 +158,46 @@ class CollectionCHD():
             logging.info(
                 time.strftime('%Y%m%d-%H:%M:%S', time.localtime(time.time())) + ' -->> 复制文件成功。')
 
-# 读取配置文件 config.ini
-config = configparser.ConfigParser()
-config_file = open("config.ini", 'r')
-config.read_file(config_file)
-
-url = config.get('spider', 'url')
-username = config.get('spider', 'username')
-password = config.get('spider', 'password')
-#配置文件读出来的值都是字符串类型，要做其他类型使用，需要做类型转化
-guibrowser = config.get('spider', 'guibrowser')
-#判断是使用什么浏览器插件，True是有gui的chrome，False是无gui的phantomjs
-if guibrowser == str(True):
-    browser = webdriver.Chrome(executable_path='chromedriver.exe')
-else:
-    cap = webdriver.DesiredCapabilities.PHANTOMJS
-    cap["phantomjs.page.settings.resourceTimeout"] = 100
-    cap["phantomjs.page.settings.userAgent"] = (
-        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/61.0.3163.100 Safari/537.36")
-    browser = webdriver.PhantomJS(executable_path='phantomjs.exe', desired_capabilities=cap)
-    #要设定浏览器的大小，不然被认为是收集的浏览页面大小，会后面报错找不到输入框。原因未知，待测试排查。
-    browser.set_window_size(1366,768)
-
-
-spiderbrowser = CollectionCHD(browser)
-spiderbrowser.openurl_and_login(url, username, password)
-home_info = spiderbrowser.home_info(browser)
-host_info = spiderbrowser.all_host_info(browser)
-average = spiderbrowser.average_to_file()
-
-context = home_info+host_info
-context.append(average)
-spiderbrowser.writer_to_file(context)
-
-# 用有GUI的浏览器时，才需要用到这个休眠，测试时可以看退出前是否是已经浏览到正确的页面
-time.sleep(1)
-browser.quit()
-
-#加个退出，确保脚本有被退出，避免脚本残留系统消耗资源
-sys.exit(0)
+# # 读取配置文件 config.ini
+# config = configparser.ConfigParser()
+# config_file = open("config.ini", 'r')
+# config.read_file(config_file)
+#
+# url = config.get('spider', 'url')
+# username = config.get('spider', 'username')
+# password = config.get('spider', 'password')
+# #配置文件读出来的值都是字符串类型，要做其他类型使用，需要做类型转化
+# guibrowser = config.get('spider', 'guibrowser')
+# #判断是使用什么浏览器插件，True是有gui的chrome，False是无gui的phantomjs
+# if guibrowser == str(True):
+#     browser = webdriver.Chrome(executable_path='chromedriver.exe')
+# else:
+#     cap = webdriver.DesiredCapabilities.PHANTOMJS
+#     cap["phantomjs.page.settings.resourceTimeout"] = 100
+#     cap["phantomjs.page.settings.userAgent"] = (
+#         "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/61.0.3163.100 Safari/537.36")
+#     browser = webdriver.PhantomJS(executable_path='phantomjs.exe', desired_capabilities=cap)
+#     #要设定浏览器的大小，不然被认为是收集的浏览页面大小，会后面报错找不到输入框。原因未知，待测试排查。
+#     browser.set_window_size(1366,768)
+#
+# try:
+#     spiderbrowser = CollectionCDH(browser)
+#     spiderbrowser.openurl_and_login(url, username, password)
+#     home_info = spiderbrowser.home_info()
+#     host_info = spiderbrowser.all_host_info()
+#     average = spiderbrowser.average_to_file()
+#
+#     context = home_info+host_info
+#     context.append(average)
+#     spiderbrowser.writer_to_file(context)
+#
+#
+#     # 用有GUI的浏览器时，才需要用到这个休眠，测试时可以看退出前是否是已经浏览到正确的页面
+#     time.sleep(1)
+# except:
+#     print('异常信息。')
+# finally:
+#     #就算抛异常，也确保可以关掉浏览器
+#     browser.quit()
+#     #加个退出，确保脚本有被退出，避免脚本残留系统消耗资源
+#     sys.exit(0)
