@@ -1,0 +1,21 @@
+[proxy]
+url =
+port =
+
+[mail]
+mail_host =
+mail_name =
+mail_password =
+sender =
+to_receivers =
+cc_receivers =
+max_send = 100
+resend_time = 10
+
+[attach]
+attach_num = 1
+attach1 =
+attach2 =
+attach3 =
+attach4 =
+attach5 =

@@ -16,8 +16,10 @@ selenium==3.6.0
 pip install -r requests.txt
 
 
-config.ini配置说明，请按实际部署的情况修改config.ini中的以下内容,详情请看manual.txt
+config.ini配置说明，修改config.ini.backup为config.ini,然后请按实际部署的情况修改config.ini中的以下内容,详情请看manual.txt
 
+2017-12-04：完成hadoop的CDH的首页和所有主机信息功能的获取
+2017-12-28：添加判断附件文件的最后修改时间，如果时间与文件lasttime中的时间相同，表示文件未更新，不添加为附件，同时该文件内容不会被写入到正文中。
 2017-11-22:发信间隔时间、发信次数判断，调整Spider.py部分代码至sendmail.py中。为发信功能剥离独立做准备。
 2017-11-22:
 新增功能：
