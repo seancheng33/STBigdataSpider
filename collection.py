@@ -2,7 +2,7 @@ import configparser
 import logging
 import time
 
-import os,shutil
+import os, shutil
 import selenium
 from bs4 import BeautifulSoup
 from selenium import webdriver
@@ -90,9 +90,9 @@ class Collection():
                     # 整行tr获取，避免出现数据混乱的情况。数据完整性比按列获取要好
                     trs = self.browser.find_elements_by_xpath(
                         '/ html / body / div[7] / form / div / div[2] / div[4] / table / tbody / tr')
-                    #/ html / body / div[7] / form / div / div[2] / div[4] / table / tbody / tr           #用于CDH 5.11.0的数据获取
-                    #//*[@id="serviceContent"]/div/form/div/div[2]/div[4]/table/tbody/tr        #用于CDH 5.10.0的数据获取
-                    #print(trs)
+                    # / html / body / div[7] / form / div / div[2] / div[4] / table / tbody / tr           #用于CDH 5.11.0的数据获取
+                    # //*[@id="serviceContent"]/div/form/div/div[2]/div[4]/table/tbody/tr        #用于CDH 5.10.0的数据获取
+                    # print(trs)
 
                     # 用来存指定状态的字典的数组
                     sList = []
@@ -115,7 +115,7 @@ class Collection():
                                 #
                                 sList.append(tmpDict)
                     if len(sList) != 0:
-                        #print(sList)
+                        # print(sList)
                         statList[status['name']] = sList
 
                     logging.info(
@@ -140,60 +140,60 @@ class Collection():
                   'cm-icon-status-concerning-health': '存在隐患的运行状况'}
         return status[statustype]
 
-    def status_table(self, text):
-        # 组合状态的数据，形成一份table的表格形式，将插入在邮件的正文中
-        table_text = text
-        html_table = '<table border="1"><tr align="center"><td>事件类型</td><td>运行状态</td><td>角色类型</td><td>主机名</td></tr>'
-
-        for item in table_text.keys():
-            event_list = table_text[item]
-            list_num = len(event_list)
-            line = 1
-            for i in event_list:
-                html_table += '<tr>'
-                for j in i:
-                    if line == 1:
-                        html_table += '<td rowspan="' + str(list_num) + '">' + item + '</td>'
-
-                    html_table += '<td>' + str(i[j]) + '</td>'
-                    line += 1
-                html_table += '</tr>'
-
-        html_table += '</table>'
-
-        return html_table
+    # def status_table(self, text):
+    #     # 组合状态的数据，形成一份table的表格形式，将插入在邮件的正文中
+    #     table_text = text
+    #     html_table = '<table border="1"><tr align="center"><td>事件类型</td><td>运行状态</td><td>角色类型</td><td>主机名</td></tr>'
+    #
+    #     for item in table_text.keys():
+    #         event_list = table_text[item]
+    #         list_num = len(event_list)
+    #         line = 1
+    #         for i in event_list:
+    #             html_table += '<tr>'
+    #             for j in i:
+    #                 if line == 1:
+    #                     html_table += '<td rowspan="' + str(list_num) + '">' + item + '</td>'
+    #
+    #                 html_table += '<td>' + str(i[j]) + '</td>'
+    #                 line += 1
+    #             html_table += '</tr>'
+    #
+    #     html_table += '</table>'
+    #
+    #     return html_table
 
     def status_writer_to_file(self, status_text):
         file_name = 'status.txt'
         # 组合状态的数据，形成一份txt的文档，将其添加为邮件的附件
-        with open(os.path.abspath('data/'+file_name),'w',encoding='utf-8') as stxt:
-            stxt.write('数据采集时间：'+time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(time.time()))+'\n')
+        with open(os.path.abspath('data/' + file_name), 'w', encoding='utf-8') as stxt:
+            stxt.write('数据采集时间：' + time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(time.time())) + '\n')
             if len(status_text) > 0:
                 for item in status_text:
-                    stxt.write(item+'\n')
+                    stxt.write(item + '\n')
                     for event_list in status_text[item]:
                         for i in event_list:
-                            stxt.write('#'+i+':'+event_list[i])
+                            stxt.write('#' + i + ':' + event_list[i])
                         stxt.write('\n')
             else:
                 stxt.write('#CDH集群无异常')
 
         logging.info(
-                    time.strftime('%Y%m%d-%H:%M:%S', time.localtime(time.time())) + ' -->> 数据写入文件完成')
+            time.strftime('%Y%m%d-%H:%M:%S', time.localtime(time.time())) + ' -->> 数据写入文件完成')
         self.copy_file_to(file_name)
 
     def copy_file_to(self, filename):
-        srcfile = os.path.abspath('data/'+filename)
-        dstfile = self.config.get('spider', 'copy_to_path')+ filename
+        srcfile = os.path.abspath('data/' + filename)
+        dstfile = self.config.get('spider', 'copy_to_path') + filename
         if not os.path.isfile(srcfile):
-            print ("%s not exist!"%(srcfile))
+            print("%s not exist!" % (srcfile))
             logging.info(
                 time.strftime('%Y%m%d-%H:%M:%S', time.localtime(time.time())) + ' -->> 源文件不存在。')
         else:
-            fpath,fname=os.path.split(dstfile)    #分离文件名和路径
+            fpath, fname = os.path.split(dstfile)  # 分离文件名和路径
             if not os.path.exists(fpath):
-                os.makedirs(fpath)                #创建路径
-            shutil.copyfile(srcfile,dstfile)      #复制文件
-            #print ("copy %s -> %s"%(srcfile,dstfile))
+                os.makedirs(fpath)  # 创建路径
+            shutil.copyfile(srcfile, dstfile)  # 复制文件
+            # print ("copy %s -> %s"%(srcfile,dstfile))
             logging.info(
                 time.strftime('%Y%m%d-%H:%M:%S', time.localtime(time.time())) + ' -->> 复制文件成功。')

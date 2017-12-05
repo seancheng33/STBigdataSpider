@@ -42,20 +42,18 @@ try:
     average = spiderbrowser2.average_to_file()
     context = home_info+host_info
     context.append(average)
+
     logging.info(time.strftime('%Y%m%d-%H:%M:%S', time.localtime(time.time())) + ' -->> 进入数据写入文件流程')
     spiderbrowser2.writer_to_file(context)
-    logging.info(time.strftime('%Y%m%d-%H:%M:%S', time.localtime(time.time())) + ' -->> 主机运行信息数据写完成')
-
+    logging.info(time.strftime('%Y%m%d-%H:%M:%S', time.localtime(time.time())) + ' -->> CDH主机运行信息数据写入文件流程')
     #需要发信的同时才将数据写到文件中
     spiderbrowser.status_writer_to_file(statusList)
-    logging.info(time.strftime('%Y%m%d-%H:%M:%S', time.localtime(time.time())) + ' -->> 异常状态数据写完成')
-    # 用有GUI的浏览器时，才需要用到这个休眠，测试时可以看退出前是否是已经浏览到正确的页面
-except:
-    logging.error(time.strftime('%Y%m%d-%H:%M:%S', time.localtime(time.time())) + ' -->> 脚本未知异常，运行终止')
+    logging.info(time.strftime('%Y%m%d-%H:%M:%S', time.localtime(time.time())) + ' -->> CDH异常状态数据写入文件流程')
+except Exception as error:
+    logging.error(time.strftime('%Y%m%d-%H:%M:%S', time.localtime(time.time())) + ' -->> 脚本异常')
 finally:
-    # 浏览器的退出加在finally，确保浏览器始终会被退出，防止脚本异常导致浏览器没有退出，浪费系统资源
+    #确保浏览器有被退出，避免浏览器因为脚本的异常退出而残留系统消耗资源
     browser.quit()
     logging.info(time.strftime('%Y%m%d-%H:%M:%S', time.localtime(time.time())) + ' -->> 退出浏览器')
-    logging.info(time.strftime('%Y%m%d-%H:%M:%S', time.localtime(time.time())) + ' -->> 退出脚本运行')
     #加个退出，确保脚本有被退出，避免脚本残留系统消耗资源
     sys.exit(0)

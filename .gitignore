@@ -1,4 +1,4 @@
-*.ini
+config.ini
 config - ����.ini
 .idea/*
 logs/*
