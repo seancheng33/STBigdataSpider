@@ -19,9 +19,12 @@ class CollectionCDH():
         self.cpuload_list = []
         self.disk_list = []
         self.memory_list = []
+        self.total_disk_list = []
+        self.total_memory_list = []
 
     # 获取一些首页的信息
     def home_info(self):
+        time.sleep(3)
         home_list = []
         text1 = self.browser.find_elements_by_xpath('//*[@id="charts-view-id"]/div[1]/div/div/div[5]')
         text2 = self.browser.find_elements_by_xpath('//*[@id="charts-view-id"]/div[2]/div/div/div[5]')
@@ -33,6 +36,7 @@ class CollectionCDH():
             a = d.get_attribute('innerHTML')
             soup = BeautifulSoup(a, 'lxml')
             b = soup.select('span')
+            # 得到的内容是多个span，但是只有奇数位的内容是需要的
             home_list.append(b[0]['title'])
 
         home_list.append('群集磁盘 IO')
@@ -40,6 +44,7 @@ class CollectionCDH():
             a = d.get_attribute('innerHTML')
             soup = BeautifulSoup(a, 'lxml')
             b = soup.select('span')
+            # 得到的内容是多个span，但是只有奇数位的内容是需要的
             home_list.append(b[0]['title'])
             home_list.append(b[2]['title'])
 
@@ -48,6 +53,7 @@ class CollectionCDH():
             a = d.get_attribute('innerHTML')
             soup = BeautifulSoup(a, 'lxml')
             b = soup.select('span')
+            # 得到的内容是多个span，但是只有奇数位的内容是需要的
             home_list.append(b[0]['title'])
             home_list.append(b[2]['title'])
 
@@ -56,6 +62,7 @@ class CollectionCDH():
             a = d.get_attribute('innerHTML')
             soup = BeautifulSoup(a, 'lxml')
             b = soup.select('span')
+            # 得到的内容是多个span，但是只有奇数位的内容是需要的
             home_list.append(b[0]['title'])
             home_list.append(b[2]['title'])
             home_list.append(b[4]['title'])
@@ -88,20 +95,30 @@ class CollectionCDH():
                 '；总磁盘空间:' + disk[1].rstrip() + '；已用物理内存：' + memory[0].rstrip()+
                 '；总物理内存：' + memory[1].rstrip())
 
-            #磁盘空间需要把TB换算成GB
-            if 'TiB' in disk[0]:
-                #字段中包含TiB，表示是TB为单位，乘以1024换算成GB
-                disk_free =  float(disk[0].rstrip().rstrip('TiB'))*1024
-            elif 'GiB' in disk[0]:
-                # 字段中包含GiB，不用换算，直接赋值
-                disk_free = float(disk[0].rstrip().rstrip('GiB'))
+            #转换磁盘空间的单位
+            disk_free = self.change_to_gb(disk[0])
+            total_disk_free = self.change_to_gb(disk[1])
 
             # 将数值添加到列表，后面拿这个来计算平均值
             self.cpuload_list.append(cpuload[2])
             self.disk_list.append(disk_free)  # 删除空格和GiB字符，剩下字符串的数字
-            self.memory_list.append(float(memory[0].strip().rstrip('GiB'))) #需要转换成float，不然后面直接掉sum会报错
+            self.memory_list.append(float(memory[0].strip().rstrip('GiB'))) #需要转换成float，不然后面直接调sum会报错
+            self.total_disk_list.append(total_disk_free)
+            self.total_memory_list.append(float(memory[1].strip().rstrip('GiB')))
+
         logging.info(time.strftime('%Y%m%d-%H:%M:%S', time.localtime(time.time())) + ' -->> 收集所有主机数据完成。')
         return info_list
+
+    def change_to_gb(self,value):
+        # 磁盘空间需要把TB换算成GB，因为集群的主机空间可能是TB和GB多种单位混合
+        if 'TiB' in value:
+            # 字段中包含TiB，表示是TB为单位，乘以1024换算成GB，先将字符串转换为float，方便后面直接用sum求和
+            change = float(value.rstrip().rstrip('TiB')) * 1024
+        elif 'GiB' in value:
+            # 字段中包含GiB，不用换算，直接赋值，先将字符串转换为float，方便后面直接用sum求和
+            change = float(value.rstrip().rstrip('GiB'))
+        return change
+
 
     def average(self, list):
         # 取平均值，方法很多，先用最简单的方法，相加后求值,这样可用不用导入类似pynum之类的外部库
@@ -110,18 +127,24 @@ class CollectionCDH():
         for num in list:
             sum = sum + float(num)
         average = sum / float('%.2f' % list_num)
-        logging.info(time.strftime('%Y%m%d-%H:%M:%S', time.localtime(time.time())) + ' -->> 计算平均值数据完成。')
         return float('%.2f' % average)
 
     def average_to_file(self):
         cpuload_average = self.average(self.cpuload_list) #计算cpu负载平均值
         disk_average = self.average(self.disk_list) #计算cpu负载平均值
-        disk_total = sum(self.disk_list) #计算磁盘空间总值
+        disk_used_total = sum(self.disk_list) #计算磁盘空间总值
+        disk_total = sum(self.total_disk_list)
         memory_average = self.average(self.memory_list)
-        memory_total = sum(self.memory_list) #计算物理内存空间总值
-        average = '群集CPU负载平均值：' + str(cpuload_average) + '%；群集已用磁盘空间平均值：' +\
-                  str(disk_average) + ' GiB；群集总已用磁盘空间：' + str(float('%.2f' % disk_total)) +\
-                  ' GiB；群集已用物理内存平均值：' + str(memory_average) + ' GiB；群集总已用物理内存：'+ str(memory_total)+' GiB。'
+        memory_used_total = sum(self.memory_list) #计算物理内存空间总值
+        memory_total = sum(self.total_memory_list)
+
+        average = '群集CPU负载(15分钟)平均值：' + str(cpuload_average) + '%\n群集已用磁盘空间平均值：' +\
+                  str(disk_average) + ' GiB；群集总已用磁盘空间：' + str(float('%.2f' % disk_used_total))+ \
+                  ' GiB；群集总磁盘空间：' + str(float('%.2f' % disk_total)) +\
+                  ' GiB\n群集已用物理内存平均值：' + str(memory_average) + \
+                  ' GiB；群集总已用物理内存：'+ str(memory_used_total)+\
+                  ' GiB；群集总物理内存：'+ str(memory_total)+' GiB。'
+        logging.info(time.strftime('%Y%m%d-%H:%M:%S', time.localtime(time.time())) + ' -->> 计算平均值及总值完成。')
         return average
 
     def writer_to_file(self, info_text):
