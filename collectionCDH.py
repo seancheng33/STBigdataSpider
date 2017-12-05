@@ -84,7 +84,7 @@ class CollectionCDH():
             memory = lstats[8].text.split('/')  # 物理内存
 
             info_list.append(
-                '主机名称:' + name + '；CPU负载(15分钟):' + cpuload[2] + '；已用磁盘空间:' + disk[0].rstrip()+
+                '主机名称:' + name + '；CPU负载(15分钟):' + cpuload[2] + '% ；已用磁盘空间:' + disk[0].rstrip()+
                 '；总磁盘空间:' + disk[1].rstrip() + '；已用物理内存：' + memory[0].rstrip()+
                 '；总物理内存：' + memory[1].rstrip())
 
@@ -94,12 +94,12 @@ class CollectionCDH():
                 disk_free =  float(disk[0].rstrip().rstrip('TiB'))*1024
             elif 'GiB' in disk[0]:
                 # 字段中包含GiB，不用换算，直接赋值
-                disk_free = disk[0].rstrip().rstrip('GiB')
+                disk_free = float(disk[0].rstrip().rstrip('GiB'))
 
             # 将数值添加到列表，后面拿这个来计算平均值
             self.cpuload_list.append(cpuload[2])
             self.disk_list.append(disk_free)  # 删除空格和GiB字符，剩下字符串的数字
-            self.memory_list.append(memory[0].strip().rstrip('GiB'))
+            self.memory_list.append(float(memory[0].strip().rstrip('GiB'))) #需要转换成float，不然后面直接掉sum会报错
         logging.info(time.strftime('%Y%m%d-%H:%M:%S', time.localtime(time.time())) + ' -->> 收集所有主机数据完成。')
         return info_list
 
@@ -114,11 +114,14 @@ class CollectionCDH():
         return float('%.2f' % average)
 
     def average_to_file(self):
-        cpuload_average = self.average(self.cpuload_list)
-        disk_average = self.average(self.disk_list)
+        cpuload_average = self.average(self.cpuload_list) #计算cpu负载平均值
+        disk_average = self.average(self.disk_list) #计算cpu负载平均值
+        disk_total = sum(self.disk_list) #计算磁盘空间总值
         memory_average = self.average(self.memory_list)
-        average = '群集CPU负载平均值:' + str(cpuload_average) + '%；群集已用磁盘空间平均值:' +\
-                  str(disk_average) + ' GiB；群集已用物理内存平均值:' + str(memory_average) + ' GiB。'
+        memory_total = sum(self.memory_list) #计算物理内存空间总值
+        average = '群集CPU负载平均值：' + str(cpuload_average) + '%；群集已用磁盘空间平均值：' +\
+                  str(disk_average) + ' GiB；群集总已用磁盘空间：' + str(float('%.2f' % disk_total)) +\
+                  ' GiB；群集已用物理内存平均值：' + str(memory_average) + ' GiB；群集总已用物理内存：'+ str(memory_total)+' GiB。'
         return average
 
     def writer_to_file(self, info_text):
@@ -136,7 +139,7 @@ class CollectionCDH():
         srcfile = os.path.abspath('data/' + filename)
         dstfile = self.config.get('spider', 'copy_to_path') + filename
         if not os.path.isfile(srcfile):
-            print("%s not exist!" % (srcfile))
+            #print("%s not exist!" % (srcfile))
             logging.error(
                 time.strftime('%Y%m%d-%H:%M:%S', time.localtime(time.time())) + ' -->> 源文件不存在。')
         else:
@@ -144,6 +147,6 @@ class CollectionCDH():
             if not os.path.exists(fpath):
                 os.makedirs(fpath)  # 创建路径
             shutil.copyfile(srcfile, dstfile)  # 复制文件
-            # print ("copy %s -> %s"%(srcfile,dstfile))
+            #print ("copy %s -> %s"%(srcfile,dstfile))
             logging.info(
                 time.strftime('%Y%m%d-%H:%M:%S', time.localtime(time.time())) + ' -->> 复制文件成功。')

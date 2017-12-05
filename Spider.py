@@ -51,7 +51,6 @@ try:
     logging.info(time.strftime('%Y%m%d-%H:%M:%S', time.localtime(time.time())) + ' -->> CDH异常状态数据写入文件流程')
 except Exception as error:
     logging.error(time.strftime('%Y%m%d-%H:%M:%S', time.localtime(time.time())) + ' -->> 脚本异常')
-    logging.error(time.strftime('%Y%m%d-%H:%M:%S', time.localtime(time.time())) + ' -->> 异常内容：'+ error )
 finally:
     #确保浏览器有被退出，避免浏览器因为脚本的异常退出而残留系统消耗资源
     browser.quit()
