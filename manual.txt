@@ -32,6 +32,13 @@ username = #登录的用户名，例：admin 或 root
 password = #登录的密码，例：password 或 123456789
 group_name = #需要获取信息的主机集群名，可以多个也可以一个，多个集群名用英文的逗号“,”分隔，例：Zabbix servers,Linux servers
 
+[ftp]
+host = #ftp的网址，例：http://127.0.0.1 或 http://zabbix.domain.com
+username = #登录ftp的用户名
+password = #登录ftp的密码
+upload_path = #本地需要上传到ftp的文件所在的文件夹路径
+download_path = #远程ftp需要下载的文件所在的文件夹路径
+
 [proxy] #邮件功能的网络代理配置，如果这两项留空，即是不使用网络代理，网络是直接连接公网
 url = #代理服务器的地址，例：proxy.domain.com 或 127.0.0.1 可以是域名或IP
 port = #代理服务器的端口，例：8081 或 8080
