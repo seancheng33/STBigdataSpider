@@ -1,5 +1,5 @@
 config.ini
 config - ����.ini
 .idea/*
-logs/*
+*.log
 data/*

@@ -166,7 +166,7 @@ class Collection():
     def status_writer_to_file(self, status_text):
         file_name = 'status.txt'
         # 组合状态的数据，形成一份txt的文档，将其添加为邮件的附件
-        with open(os.path.abspath('data/' + file_name), 'w', encoding='utf-8') as stxt:
+        with open(os.path.abspath('../data/' + file_name), 'w', encoding='utf-8') as stxt:
             stxt.write('数据采集时间：' + time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(time.time())) + '\n')
             if len(status_text) > 0:
                 for item in status_text:
@@ -183,7 +183,7 @@ class Collection():
         self.copy_file_to(file_name)
 
     def copy_file_to(self, filename):
-        srcfile = os.path.abspath('data/' + filename)
+        srcfile = os.path.abspath('../data/' + filename)
         dstfile = self.config.get('spider', 'copy_to_path') + filename
         if not os.path.isfile(srcfile):
             print("%s not exist!" % (srcfile))

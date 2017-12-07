@@ -1,7 +1,7 @@
 import configparser,logging,sys,time
 from selenium import webdriver
-from collection import Collection
-from collectionCDH import CollectionCDH
+from hadoop.collection import Collection
+from hadoop.collectionCDH import CollectionCDH
 
 logging.basicConfig(filename='logs/' + time.strftime('%Y%m%d', time.localtime(time.time())) + '.log',
                     format='%(asctime)s %(filename)s[line:%(lineno)d] %(levelname)s %(message)s',
@@ -20,13 +20,13 @@ password = config.get('spider', 'password')
 guibrowser = config.get('spider', 'guibrowser')
 #判断是使用什么浏览器插件，True是有gui的chrome，False是无gui的phantomjs
 if guibrowser == str(True):
-    browser = webdriver.Chrome(executable_path='chromedriver.exe')
+    browser = webdriver.Chrome(executable_path='../chromedriver.exe')
 else:
     cap = webdriver.DesiredCapabilities.PHANTOMJS
     cap["phantomjs.page.settings.resourceTimeout"] = 100
     cap["phantomjs.page.settings.userAgent"] = (
         "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/61.0.3163.100 Safari/537.36")
-    browser = webdriver.PhantomJS(executable_path='phantomjs.exe', desired_capabilities=cap)
+    browser = webdriver.PhantomJS(executable_path='../phantomjs.exe', desired_capabilities=cap)
     #要设定浏览器的大小，不然被认为是收集的浏览页面大小，会后面报错找不到输入框。原因未知，待测试排查。
     browser.set_window_size(1366,768)
 
