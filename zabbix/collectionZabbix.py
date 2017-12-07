@@ -114,8 +114,7 @@ class CollectionZabbix():
         output = requests.post(url=self.url, headers=self.headers, data=json.dumps(data))
         dict = json.loads(output.text)
         result = dict['result']
-        value = result['value']
-        return value
+        return result[0]['value']
 
     def get_memory_history(self,itemids):
         #获取内存和磁盘空间等的历史数据。返回类型是int
@@ -164,7 +163,9 @@ class CollectionZabbix():
         values = []
         # 遍历结果，取值
         for result in dict['result']:
-            value = int(result['value'])/1000/1000 #得到Mbps单位的数值
+            #value = int(result['value'])/1000/1000 #得到Mbps单位的数值
+            value = int(result['value'])
+            print(value)
             values.append(float('%.2f' % value))
         return values
 
@@ -233,8 +234,11 @@ for group in group_list:
 
         eth_in = zabbix.get_eth_history(eth_in_itemsid)
         eth_out = zabbix.get_eth_history(eth_out_itemsid)
+        print('eth_in:'+str(eth_in))
+        print('eth_out:' + str(eth_out))
 
-        text = '''主机名：HOSTNAME;可用物理内存：MEMORY GB; CPU平均负载（1分钟 5分钟 15分钟）：CPU1% CPU5% CPU15%;可用磁盘空间：FDS;网络传输： 发送：ETHOUT Mbps 接收：ETHIN Mbps'''
+        text = '''主机名：HOSTNAME;可用物理内存：MEMORY GB; CPU平均负载（1分钟 5分钟 15分钟）：CPU1% CPU5% CPU15%;
+        可用磁盘空间：FDS;网络传输： 发送：ETHOUT Mbps 接收：ETHIN Mbps'''
         text = text.replace('HOSTNAME',str(hostname))
         text = text.replace('MEMORY', str(memory))
         text = text.replace('CPU1', str(cpu1))
