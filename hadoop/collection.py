@@ -7,6 +7,8 @@ import selenium
 from bs4 import BeautifulSoup
 from selenium import webdriver
 
+from util.pickle_util import Pickle_Util
+
 
 class Collection():
     def __init__(self, browser):
@@ -111,6 +113,9 @@ class Collection():
                                 name = lstats[4].text  # 主机
                                 # 组成有一个字典字段
                                 # tmpDict = {'status': stat[2], 'type': type, 'name': name}
+
+                                #tmpDict = {'运行状态': self.status_name(stat[2]), '角色类型': type, '主机名': name}
+                                status_name = Pickle_Util().load_data('status.pkl')
                                 tmpDict = {'运行状态': self.status_name(stat[2]), '角色类型': type, '主机名': name}
                                 #
                                 sList.append(tmpDict)

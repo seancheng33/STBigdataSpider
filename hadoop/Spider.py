@@ -20,13 +20,13 @@ password = config.get('spider', 'password')
 guibrowser = config.get('spider', 'guibrowser')
 #判断是使用什么浏览器插件，True是有gui的chrome，False是无gui的phantomjs
 if guibrowser == str(True):
-    browser = webdriver.Chrome(executable_path='../chromedriver.exe')
+    browser = webdriver.Chrome(executable_path='../lib/chromedriver.exe')
 else:
     cap = webdriver.DesiredCapabilities.PHANTOMJS
     cap["phantomjs.page.settings.resourceTimeout"] = 100
     cap["phantomjs.page.settings.userAgent"] = (
         "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/61.0.3163.100 Safari/537.36")
-    browser = webdriver.PhantomJS(executable_path='../phantomjs.exe', desired_capabilities=cap)
+    browser = webdriver.PhantomJS(executable_path='../lib/phantomjs.exe', desired_capabilities=cap)
     #要设定浏览器的大小，不然被认为是收集的浏览页面大小，会后面报错找不到输入框。原因未知，待测试排查。
     browser.set_window_size(1366,768)
 
@@ -50,7 +50,7 @@ try:
     spiderbrowser.status_writer_to_file(statusList)
     logging.info(time.strftime('%Y%m%d-%H:%M:%S', time.localtime(time.time())) + ' -->> CDH异常状态数据写入文件流程')
 except Exception as error:
-    logging.error(time.strftime('%Y%m%d-%H:%M:%S', time.localtime(time.time())) + ' -->> 脚本异常')
+    logging.error(time.strftime('%Y%m%d-%H:%M:%S', time.localtime(time.time())) + ' -->> 脚本异常:\n'+str(error))
 finally:
     #确保浏览器有被退出，避免浏览器因为脚本的异常退出而残留系统消耗资源
     browser.quit()
