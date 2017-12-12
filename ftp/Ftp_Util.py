@@ -1,6 +1,4 @@
-import configparser, ftplib
-
-import os
+import configparser, ftplib, logging, os, time
 
 
 class Ftp_Util():
@@ -9,7 +7,13 @@ class Ftp_Util():
         with open('config.ini', 'r', encoding='utf-8') as config_file:
             config.read_file(config_file)
 
+        logging.basicConfig(filename='logs/' + time.strftime('%Y%m%d', time.localtime(time.time())) + '.log',
+                            format='%(asctime)s %(filename)s[line:%(lineno)d] %(levelname)s %(message)s',
+                            datefmt='%a, %d %b %Y %H:%M:%S',
+                            level=logging.DEBUG)
+
         self.host = config.get('ftp', 'host')
+        self.port = int(config.get('ftp', 'port'))  # 端口号必须是int类型，直接用配置文件里面的值，是str类型，会报错
         self.username = config.get('ftp', 'username')
         self.password = config.get('ftp', 'password')
 
@@ -20,19 +24,25 @@ class Ftp_Util():
         self.src_path = config.get('ftp', 'src_path')  # 需要上传到服务器的路径
 
         self.ftp = ftplib.FTP()
-        self.ftp.connect(self.host)
+        self.ftp.connect(self.host, self.port)
         self.ftp.encoding = 'utf-8'
         self.ftp.set_debuglevel(1)
 
     def login_ftp(self):
         try:
             self.ftp.login(self.username, self.password)
-            # print("登陆成功")
+            logging.info(time.strftime('%Y%m%d-%H:%M:%S', time.localtime(time.time())) +
+                "  -->> 登陆成功")
         except Exception as error:
-            print(str(error))
+            logging.error(time.strftime('%Y%m%d-%H:%M:%S', time.localtime(time.time())) +
+                         "  -->> 登陆异常：:"+str(error))
+            #print(str(error))
 
     def close_ftp(self):
         self.ftp.close()
+        logging.info(time.strftime('%Y%m%d-%H:%M:%S', time.localtime(time.time())) +
+                     "  -->> 退出登陆")
+
 
     def to_server_path(self):
         self.login_ftp()
@@ -43,14 +53,23 @@ class Ftp_Util():
         if self.has_folder(folder_list):
             # 文件夹存在，切换到该文件夹
             self.ftp.cwd(self.server_path)
+            logging.info(time.strftime('%Y%m%d-%H:%M:%S', time.localtime(time.time())) +
+                         "  -->> 切换到目录 ‘"+self.server_path+"’ 成功。")
 
         else:
+            logging.info(time.strftime('%Y%m%d-%H:%M:%S', time.localtime(time.time())) +
+                         "  -->> 服务器目录‘"+self.server_path+"’不存在。")
             # 上面的判断，文件夹不存在，则创建文件夹
             self.ftp.mkd(self.server_path)
+            logging.info(time.strftime('%Y%m%d-%H:%M:%S', time.localtime(time.time())) +
+                         "  -->> 创建目录 ‘" + self.server_path + "’ 成功。")
             self.ftp.cwd(self.server_path)
+            logging.info(time.strftime('%Y%m%d-%H:%M:%S', time.localtime(time.time())) +
+                         "  -->> 切换到目录 ‘" + self.server_path + "’ 成功。")
 
+        # self.ftp.retrlines('LIST') # 效果同ftp.dir()
 
-        # self.upload_file_to()
+        self.upload_file_to()
         self.download_file_from()
 
         # print(self.ftp.dir())
@@ -70,7 +89,10 @@ class Ftp_Util():
                 if t in type[1]:
                     # 列表中的文件分离出来的后缀名匹配配置文件中的后缀名，就上传改文件
                     with open(os.path.join(os.path.abspath(self.src_path), item), 'rb') as file:  # 一定要二进制模式打开，不然有各种报错。
-                        self.ftp.storbinary('STOR %s' % item, file)#没有前面的‘STOR空格’，会报错，报未知命令错误
+                        self.ftp.storbinary('STOR %s' % item, file)  # 没有前面的‘STOR空格’，会报错，报未知命令错误
+                        logging.info(time.strftime('%Y%m%d-%H:%M:%S', time.localtime(time.time())) +
+                                     "  -->> 上传文件 ‘" + item + "’ 本地路径："+self.src_path+" >>-->>  服务器路径："+self.server_path )
+
 
     def download_file_from(self):
         file_list = []
@@ -81,9 +103,12 @@ class Ftp_Util():
                 # 不是用有没有后缀，而是用这种办法来判断是否文件，可以将是文件而没有后缀名的文件也一起判断出来
                 # 单纯判断后缀名，就可能把没有后缀名的文件判断为文件夹，这个办法更正确
 
-                filename = item.split(' ')[-1]# 整个字符串按空格分隔，最后一个元素就是文件名和后缀名
+                filename = item.split(' ')[-1]  # 整个字符串按空格分隔，最后一个元素就是文件名和后缀名
                 with open(os.path.join(os.path.abspath(self.local_path), filename), 'wb') as file:
-                    self.ftp.retrbinary('RETR %s' % filename, file.write) #没有前面的‘RETR空格’，会报错，报未知命令错误
+                    self.ftp.retrbinary('RETR %s' % filename, file.write)  # 没有前面的‘RETR空格’，会报错，报未知命令错误
+                    logging.info(time.strftime('%Y%m%d-%H:%M:%S', time.localtime(time.time())) +
+                                 "  -->> 下载文件 ‘" + filename + "’ 服务器路径：" + self.server_path + " >>-->>  本地路径：" + self.local_path)
+
 
     def has_folder(self, docs_list):
         # 根据文件夹的路径传入，判断该文件夹是否存在
