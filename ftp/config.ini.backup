@@ -2,5 +2,6 @@
 host =
 username =
 password =
-upload_path =
-download_path =
+server_path =
+local_path =
+src_path =
