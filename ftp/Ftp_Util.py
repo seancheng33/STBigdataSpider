@@ -172,7 +172,7 @@ class Ftp_Util():
                         elif operation == 'r':
                             # 当选择了需要重命名下载文件时，会在原文件名的前面加上年月日
                             loop = False
-                            with open(os.path.join(os.path.abspath(self.local_path), \
+                            with open(os.path.join(os.path.abspath(self.local_path),
                                                    time.strftime('%Y%m%d%H%M%S',
                                                                  time.localtime(time.time())) + filename),
                                       'wb') as file:
