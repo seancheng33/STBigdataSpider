@@ -197,10 +197,9 @@ class SendMail():
             #print(last_time)
         return last_time
 
-
-#执行程序发送邮件
-sendMail = SendMail()
-sendMail.send()
-
-#退出脚本
-sys.exit(0)
+if __name__ == '__main__':
+    #执行程序发送邮件
+    sendMail = SendMail()
+    sendMail.send()
+    #退出脚本
+    sys.exit(0)

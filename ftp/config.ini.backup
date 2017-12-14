@@ -1,7 +1,8 @@
 [ftp]
 host =
+port = 21
 username =
 password =
 server_path =
 local_path =
-src_path =
+upload_file_type =
