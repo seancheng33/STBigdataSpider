@@ -1,7 +1,7 @@
 import configparser, ftplib, logging, os, time
 
 
-class Ftp_Util():
+class Ftp_Util:
     def __init__(self):
         # 读取配置文件
         config = configparser.ConfigParser()

@@ -1,6 +1,6 @@
 import pickle
 
-class Pickle_Util():
+class Pickle_Util:
     #将一些常用的字典封装成一个plk的文件，适用于一些常量的保存
 
     #储存方法

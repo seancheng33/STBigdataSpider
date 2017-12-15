@@ -1,6 +1,6 @@
 import configparser,requests,json
 
-class CollectionZabbix():
+class CollectionZabbix:
     def __init__(self):
         # 读取配置文件 config.ini
         self.config = configparser.ConfigParser()

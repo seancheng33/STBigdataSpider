@@ -10,7 +10,7 @@ from selenium import webdriver
 from util.pickle_util import Pickle_Util
 
 
-class Collection():
+class Collection:
     def __init__(self, browser):
         self.browser = browser
         logging.basicConfig(filename='logs/' + time.strftime('%Y%m%d', time.localtime(time.time())) + '.log',

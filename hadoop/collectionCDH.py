@@ -2,7 +2,7 @@ import configparser, logging, shutil, time, os, selenium
 from bs4 import BeautifulSoup
 
 
-class CollectionCDH():
+class CollectionCDH:
     def __init__(self, browser):
         self.browser = browser
 

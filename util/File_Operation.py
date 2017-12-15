@@ -1,6 +1,6 @@
 import logging,os,shutil,time
 
-class File_Operation():
+class File_Operation:
     def status_writer_to_file(self, status_text):
         file_name = 'status.txt'
         # 组合状态的数据，形成一份txt的文档，将其添加为邮件的附件

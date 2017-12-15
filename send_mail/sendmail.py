@@ -6,7 +6,7 @@ from email.mime.application import MIMEApplication
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 
-class SendMail():
+class SendMail:
     def __init__(self):
         logging.basicConfig(filename='logs/' + time.strftime('%Y%m%d', time.localtime(time.time())) + '.log',
                             format='%(asctime)s %(filename)s[line:%(lineno)d] %(levelname)s %(message)s',
