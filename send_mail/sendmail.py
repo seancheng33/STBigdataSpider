@@ -56,9 +56,6 @@ class SendMail:
         #     self.att1['Content-Disposition'] = 'attachment;filename="status.txt"'
         #     self.message.attach(self.att1)
 
-
-
-
     def send(self):
 
         proxy_url = self.config.get('proxy', 'url')
