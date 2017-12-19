@@ -81,7 +81,7 @@ class SendMail:
             smtpObj.quit()  # 关闭连接
             logging.info(time.strftime('%Y%m%d-%H:%M:%S', time.localtime(time.time())) + "  -->> 邮件发送成功")
         except smtplib.SMTPException:
-            logging.error(time.strftime('%Y%m%d-%H:%M:%S', time.localtime(time.time())) + " -->> Error: 无法发送邮件")
+            logging.error(time.strftime('%Y%m%d-%H:%M:%S', time.localtime(time.time())) + " -->> Error: 无法发送邮件"+str(smtplib.SMTPException))
 
     def can_send(self):
         #如果这次邮件需要添加的附件数为0，也就是说明全部的附件文件都是没有异常的文件，也就表示不用发信，返回不能发信的False
@@ -97,8 +97,8 @@ class SendMail:
             with open('count', 'w') as f:
                 f.write('0')
 
-        mtime2 = os.path.getmtime('count')
-        ntime2 = time.time()
+        mtime2 = os.path.getmtime('count')#文件修改时间
+        ntime2 = time.time()#现在时间
         #修改时间和现在时间相差不超过设定的秒数，即是距离上次发邮件间隔达不到设定的秒数，返回不能发信的False
         if (ntime2-mtime2) < int(self.config.get('mail', 'resend_time')):
             logging.info(time.strftime('%Y%m%d-%H:%M:%S', time.localtime(time.time())) + "  -->> 时间间隔未到，邮件不发送")
@@ -117,6 +117,8 @@ class SendMail:
                 with open('count', 'w') as f:
                     f.write(str(num))
                 return True
+
+        #判断内容，如果内容和之前发信的内容相同，不发信
 
     def add_attach(self):
         attach_num = int(self.config.get('attach','attach_num'))
@@ -156,12 +158,14 @@ class SendMail:
             ltimetxt.write(','.join(new_mtime))
 
     def read_to_content(self):
+        wline = [] #建立一个列表，将附件读行的内容写到列表，再写到文件
         last_time = self.get_attach_mtime()
         new_mtime = []
         attach_num = int(self.config.get('attach', 'attach_num'))
         content = '<p>以下正文及附件为运行状态不良的各主机状态:<br /><br />'
         for i in range(1, attach_num + 1):
             attach_file = self.config.get('attach', 'attach' + str(i))
+            filename = os.path.basename(attach_file)#提取文件名后面用于判断是否需要保存该文件的内容到临时文件
             if attach_file != '':
                 mtime = str(os.path.getmtime(attach_file))
                 new_mtime.append(mtime)
@@ -178,10 +182,20 @@ class SendMail:
                         lines = attach_txt.readlines()
                         for line in lines:
                             content = content + line + '<br />'
+                            if filename == 'status.txt':
+                                #
+                                wline.append(line)
                     content = content + '<br />'
+
+        #将列表中的内容写到一个临时文件中
+        with open('tmp','w',encoding='utf-8') as w:
+            for line in wline:
+                w.write(line)
 
         content = content + '<br /><br />本邮件内容由python脚本自动采集并发送。</p>'
         return content
+
+
 
     def get_attach_mtime(self):
         #如果文件不存在，赋值最后修改时间为空，后面在添加了附件后，会创建该文件并写入内容

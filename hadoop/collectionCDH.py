@@ -141,9 +141,9 @@ class CollectionCDH:
         average = '群集CPU负载(15分钟)平均值：' + str(cpuload_average) + '%\n群集已用磁盘空间平均值：' +\
                   str(disk_average) + ' GiB；群集总已用磁盘空间：' + str(float('%.2f' % disk_used_total))+ \
                   ' GiB；群集总磁盘空间：' + str(float('%.2f' % disk_total)) +\
-                  ' GiB\n群集已用物理内存平均值：' + str(memory_average) + \
-                  ' GiB；群集总已用物理内存：'+ str(memory_used_total)+\
-                  ' GiB；群集总物理内存：'+ str(memory_total)+' GiB。'
+                  ' GiB\n群集已用物理内存平均值：' + str(float('%.2f' %memory_average)) + \
+                  ' GiB；群集总已用物理内存：'+ str(float('%.2f' %memory_used_total))+\
+                  ' GiB；群集总物理内存：'+ str(float('%.2f' % memory_total))+' GiB。'
         logging.info(time.strftime('%Y%m%d-%H:%M:%S', time.localtime(time.time())) + ' -->> 计算平均值及总值完成。')
         return average
 

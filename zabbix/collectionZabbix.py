@@ -27,7 +27,6 @@ class CollectionZabbix:
             self.browser.find_element_by_id("password").send_keys(password)
             self.browser.find_element_by_id("enter").click()
 
-
         except selenium.common.exceptions.NoSuchElementException:
             # 如果报错说没有找到页面元素，刷新浏览器后再重新执行登陆
             logging.warning(time.strftime('%Y%m%d-%H:%M:%S', time.localtime(time.time())) + ' -->> 页面获取元素失败，刷新页面。')
@@ -60,7 +59,6 @@ class CollectionZabbix:
                         print(i.text.strip('\n'))
             print('-----------------')
 
-
 if __name__ == '__main__':
 
     config = configparser.ConfigParser()
@@ -72,7 +70,6 @@ if __name__ == '__main__':
     password = config.get('zabbix', 'password')
     if guibrowser == str(True):
         browser = webdriver.Chrome(executable_path='../lib/chromedriver.exe')
-        browser.entry.level = 0
     else:
         cap = webdriver.DesiredCapabilities.PHANTOMJS
         cap["phantomjs.page.settings.resourceTimeout"] = 100
@@ -81,7 +78,6 @@ if __name__ == '__main__':
         browser = webdriver.PhantomJS(executable_path='../lib/phantomjs.exe', desired_capabilities=cap)
         #要设定浏览器的大小，不然被认为是收集的浏览页面大小，会后面报错找不到输入框。原因未知，待测试排查。
         browser.set_window_size(1366,768)
-
 
     zabbix = CollectionZabbix(browser)
     zabbix.openurl_and_login(url,username,password)
