@@ -1,0 +1,6 @@
+[spider]
+url = 
+username = 
+password = 
+checkstatus = cm-icon-status-bad-health
+copy_to_path =

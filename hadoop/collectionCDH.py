@@ -2,7 +2,7 @@ import configparser, logging, shutil, time, os, selenium
 from bs4 import BeautifulSoup
 
 
-class CollectionCDH():
+class CollectionCDH:
     def __init__(self, browser):
         self.browser = browser
 
@@ -141,16 +141,16 @@ class CollectionCDH():
         average = '群集CPU负载(15分钟)平均值：' + str(cpuload_average) + '%\n群集已用磁盘空间平均值：' +\
                   str(disk_average) + ' GiB；群集总已用磁盘空间：' + str(float('%.2f' % disk_used_total))+ \
                   ' GiB；群集总磁盘空间：' + str(float('%.2f' % disk_total)) +\
-                  ' GiB\n群集已用物理内存平均值：' + str(memory_average) + \
-                  ' GiB；群集总已用物理内存：'+ str(memory_used_total)+\
-                  ' GiB；群集总物理内存：'+ str(memory_total)+' GiB。'
+                  ' GiB\n群集已用物理内存平均值：' + str(float('%.2f' %memory_average)) + \
+                  ' GiB；群集总已用物理内存：'+ str(float('%.2f' %memory_used_total))+\
+                  ' GiB；群集总物理内存：'+ str(float('%.2f' % memory_total))+' GiB。'
         logging.info(time.strftime('%Y%m%d-%H:%M:%S', time.localtime(time.time())) + ' -->> 计算平均值及总值完成。')
         return average
 
     def writer_to_file(self, info_text):
         file_name = 'CDHstatus.txt'
         # 组合状态的数据，形成一份txt的文档，将其添加为邮件的附件
-        with open(os.path.abspath('data/' + file_name), 'w', encoding='utf-8') as stxt:
+        with open(os.path.abspath('../data/' + file_name), 'w', encoding='utf-8') as stxt:
             stxt.write('数据采集时间：' + time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(time.time())) + '\n')
             for t in info_text:
                 stxt.write(t + '\n')
@@ -159,7 +159,7 @@ class CollectionCDH():
         self.copy_file_to(file_name)
 
     def copy_file_to(self, filename):
-        srcfile = os.path.abspath('data/' + filename)
+        srcfile = os.path.abspath('../data/' + filename)
         dstfile = self.config.get('spider', 'copy_to_path') + filename
         if not os.path.isfile(srcfile):
             #print("%s not exist!" % (srcfile))

@@ -1,254 +1,85 @@
-import configparser,requests,json
+import configparser, logging, time
+import selenium
+from bs4 import BeautifulSoup
+from selenium import webdriver
 
-class CollectionZabbix():
-    def __init__(self):
+
+class CollectionZabbix:
+    def __init__(self, browser):
+        self.browser = browser
+        logging.basicConfig(filename='logs/' + time.strftime('%Y%m%d', time.localtime(time.time())) + '.log',
+                            format='%(asctime)s %(filename)s[line:%(lineno)d] %(levelname)s %(message)s',
+                            datefmt='%a, %d %b %Y %H:%M:%S',
+                            level=logging.DEBUG)
+
         # 读取配置文件 config.ini
         self.config = configparser.ConfigParser()
         self.config_file = open("config.ini", 'r')
         self.config.read_file(self.config_file)
 
-        self.headers = {'Content-Type': 'application/json-rpc'}
-        self.server_ip = self.config.get('zabbix','server_ip')
+    def openurl_and_login(self, url, username, password):
 
-        self.url = 'http://%s/zabbix/api_jsonrpc.php' % self.server_ip
-        self.username = self.config.get('zabbix','username')
-        self.passwd = self.config.get('zabbix','password')
+        self.browser.get(url)
+        logging.info(time.strftime('%Y%m%d-%H:%M:%S', time.localtime(time.time())) + ' -->> 打开网址成功。')
 
-        self.group_name = self.config.get('zabbix','group_name')
+        try:
+            self.browser.find_element_by_id("name").send_keys(username)
+            self.browser.find_element_by_id("password").send_keys(password)
+            self.browser.find_element_by_id("enter").click()
 
+        except selenium.common.exceptions.NoSuchElementException:
+            # 如果报错说没有找到页面元素，刷新浏览器后再重新执行登陆
+            logging.warning(time.strftime('%Y%m%d-%H:%M:%S', time.localtime(time.time())) + ' -->> 页面获取元素失败，刷新页面。')
+            self.browser.refresh()
+            self.login_to(username, password)
 
-    # 获取token,后面的获取资料基本上都需要使用到这个token作为登陆用。
-    def getToken(self):
-        username = self.username
-        passwd = self.passwd
-        data = {
-            "jsonrpc": "2.0",
-            "method": "user.login",
-            "params": {
-                "user": username,
-                "password": passwd
-            },
-            "id": 0
-        }
+        logging.info(time.strftime('%Y%m%d-%H:%M:%S', time.localtime(time.time())) + ' -->> 登陆成功。')
+        # 停3秒，让页面可以读取数据完整
+        time.sleep(3)
+        # return browser
 
-        request = requests.post(url=self.url, headers=self.headers, data=json.dumps(data))
-        dict = json.loads(request.text)
-        return dict['result']
+    def get_latest_data(self):
+        self.browser.find_element_by_link_text('最新数据').click()
+        time.sleep(5)
+        #self.browser.save_screenshot('1.png')
 
-    def get_group_id(self):
-        #需要获取id的主机群组名
-        name = self.group_name.strip(',').split(',')
-        data = {
-                "jsonrpc": "2.0",
-                "method": "hostgroup.get",
-                "params": {
-                    "output": "extend",
-                    "filter": {
-                        "name": name
-                    }
-                },
-                "auth": self.getToken(),
-                "id": 1
-            }
-        #通讯zabbix的API，得到结果
-        output = requests.post(url=self.url, headers=self.headers, data=json.dumps(data))
-        # 将返回的结果集是json格式，需要做处理
-        dict = json.loads(output.text)
-        #取出result中的值，这个才是需要的结果
-        return dict['result']
+        data = self.browser.find_element_by_class_name('list-table')
+        soup = BeautifulSoup(data.get_attribute('innerHTML'), 'lxml')
+        tr_list = soup.findAll('tr')
 
-    def get_group_one(self,groupid):
-        #获取主机ID
-        #groupid = self.get_group_id()
-        data = {
-            "jsonrpc": "2.0",
-            "method": "host.get",
-            "params": {
-                "output": ["hostid","name"],
-                "groupids":groupid,
-            },
-            "auth": self.getToken(),
-            "id": 1
-        }
-        output = requests.post(url=self.url, headers=self.headers, data=json.dumps(data))
-        dict = json.loads(output.text)
-        return dict['result'] # 返回result中的值，这个才是需要的结果
+        for line in tr_list:
+            ldata = line.findAll('td')
+            if len(ldata) == 4:
+                for i in ldata:
+                    if len(i.text) > 0:
+                        print('主机：',i.text.strip('\n'))
+            else:
+                for i in ldata:
+                    if len(i.text) > 0:
+                        print(i.text.strip('\n'))
+            print('-----------------')
 
-    def get_host_itemsid(self,hostid,filtername,filtervalue):
-        #hostid = self.get_group_one()
-        data = {
-            "jsonrpc": "2.0",
-            "method": "item.get",
-            "params": {
-                "output": ["itemhid","name","key_"],
-                "hostids": hostid,
-                "sortfield": "name",
-                #用key_的值作为搜索的条件，比用name更精准
-                "search":{
-                    filtername:filtervalue,
-                },
-            },
-            "auth": self.getToken(),
-            "id": 1
-        }
-        output = requests.post(url=self.url, headers=self.headers, data=json.dumps(data))
-        dict = json.loads(output.text)
-        return dict['result']
+if __name__ == '__main__':
 
-    def get_cpuload_history(self,itemids):
-        # CPU的数据是float，history返回的对象需要是float，所以独立一个函数
-        data = {
-            "jsonrpc": "2.0",
-            "method": "history.get",
-            "params": {
-                "output": "extend",
-                "history": 0, #CPU的数据是float，这个需要改成0
-                #根据zabbix的api，history有5个值，默认值是3，
-                # 其他的分别是0 - numeric float; 1 - character; 2 - log; 3 - numeric unsigned; 4 - text.
-                "itemids": itemids,
-                "limit": 1
-            },
-            "auth": self.getToken(),
-            "id": 1
-        }
-        output = requests.post(url=self.url, headers=self.headers, data=json.dumps(data))
-        dict = json.loads(output.text)
-        result = dict['result']
-        value = result['value']
-        return value
+    config = configparser.ConfigParser()
+    config_file = open("config.ini", 'r')
+    config.read_file(config_file)
+    guibrowser = config.get('zabbix','guibrowser')
+    url = config.get('zabbix', 'url')
+    username = config.get('zabbix', 'username')
+    password = config.get('zabbix', 'password')
+    if guibrowser == str(True):
+        browser = webdriver.Chrome(executable_path='../lib/chromedriver.exe')
+    else:
+        cap = webdriver.DesiredCapabilities.PHANTOMJS
+        cap["phantomjs.page.settings.resourceTimeout"] = 100
+        cap["phantomjs.page.settings.userAgent"] = (
+            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/61.0.3163.100 Safari/537.36")
+        browser = webdriver.PhantomJS(executable_path='../lib/phantomjs.exe', desired_capabilities=cap)
+        #要设定浏览器的大小，不然被认为是收集的浏览页面大小，会后面报错找不到输入框。原因未知，待测试排查。
+        browser.set_window_size(1366,768)
 
-    def get_memory_history(self,itemids):
-        #获取内存和磁盘空间等的历史数据。返回类型是int
-        data = {
-            "jsonrpc": "2.0",
-            "method": "history.get",
-            "params": {
-                "output": "extend",
-                "history": 3, #CPU的数据是float，这个需要改成0
-                #根据zabbix的api，history有5个值，默认值是3，
-                # 其他的分别是0 - numeric float; 1 - character; 2 - log; 3 - numeric unsigned; 4 - text.
-                "itemids": itemids,
-                "limit": 1
-            },
-            "auth": self.getToken(),
-            "id": 1
-        }
-        output = requests.post(url=self.url, headers=self.headers, data=json.dumps(data))
-        dict = json.loads(output.text)
-        values = []
-        # 遍历结果，取值
-        for result in dict['result']:
-            value = int(result['value'])/1024/1024/1024 #得到GB单位的数值
-            values.append(float('%.2f' % value))
-        return values
-
-    def get_eth_history(self,itemids):
-
-        #获取内存和磁盘空间等的历史数据。返回类型是int
-        data = {
-            "jsonrpc": "2.0",
-            "method": "history.get",
-            "params": {
-                "output": "extend",
-                "history": 3, #CPU的数据是float，这个需要改成0
-                #根据zabbix的api，history有5个值，默认值是3，
-                # 其他的分别是0 - numeric float; 1 - character; 2 - log; 3 - numeric unsigned; 4 - text.
-                "itemids": itemids ,
-                "limit": 1
-            },
-            "auth": self.getToken(),
-            "id": 1
-        }
-        output = requests.post(url=self.url, headers=self.headers, data=json.dumps(data))
-        dict = json.loads(output.text)
-        values = []
-        # 遍历结果，取值
-        for result in dict['result']:
-            value = int(result['value'])/1000/1000 #得到Mbps单位的数值
-            values.append(float('%.2f' % value))
-        return values
-
-    def get_host_free_disk_space_itemid(self, hostid):
-        # 获取可用磁盘空间的itemid，因为这里需要比较复杂的差集计算，去掉一些不需要的内容，并且磁盘可用是多个的，独立出来另外计算id
-        # 但是会调用到获取get_host_itemsid
-        fds = zabbix.get_host_itemsid(hostid, "name", "Free disk space on $1")
-        fds2 = zabbix.get_host_itemsid(hostid, "name", "Free disk space on $1 (percentage)")
-
-        fds3 = [item for item in fds if item not in fds2]
-        for fd in fds3:
-            if fd['key_'] == 'vfs.fs.size[/boot,free]':
-                fds3.remove(fd)
-        fdsid = []
-        for fd in fds3:
-            fdsid.append(fd['itemid'])
-
-        return fdsid
-
-
-    def change_to_itemid(self,results):
-        itemids = []
-        for result in results:
-            itemids.append(result['itemid'])
-        return itemids
-
-
-zabbix = CollectionZabbix()
-
-group_list = zabbix.get_group_id()
-
-for group in group_list:
-    groupid = group['groupid']
-    groupname = group['name']
-    print("主机群组："+groupname)
-    host_list = zabbix.get_group_one(groupid)
-    #print(host_list)
-    for host in host_list:
-        hostid = host['hostid']
-        hostname = host['name']
-        memory_itemsid = zabbix.get_host_itemsid(hostid,'key_','vm.memory.size[available]')
-        memory_itemsid = zabbix.change_to_itemid(memory_itemsid)
-        cpu1_itemsid = zabbix.get_host_itemsid(hostid, 'key_', 'system.cpu.load[percpu,avg1]')
-        cpu1_itemsid = zabbix.change_to_itemid(cpu1_itemsid)
-        cpu5_itemsid = zabbix.get_host_itemsid(hostid, 'key_', 'system.cpu.load[percpu,avg5]')
-        cpu5_itemsid = zabbix.change_to_itemid(cpu5_itemsid)
-        cpu15_itemsid = zabbix.get_host_itemsid(hostid, 'key_', 'system.cpu.load[percpu,avg15]')
-        cpu15_itemsid = zabbix.change_to_itemid(cpu15_itemsid)
-        free_disk_space_itemsid = zabbix.get_host_free_disk_space_itemid(hostid)
-
-        memory = zabbix.get_memory_history(memory_itemsid)
-        cpu1 = zabbix.get_cpuload_history(cpu1_itemsid)
-        cpu5 = zabbix.get_cpuload_history(cpu5_itemsid)
-        cpu15 = zabbix.get_cpuload_history(cpu15_itemsid)
-        ethio = zabbix.get_eth_history(hostid)
-        free_disk_spaces = ''
-        for i in free_disk_space_itemsid:
-            free_disk_space = zabbix.get_memory_history(i)
-            free_disk_spaces += str(free_disk_space) +" GB "
-
-        eth_in_itemsid = zabbix.get_host_itemsid(hostid,'key_','net.if.in[e')
-        eth_in_itemsid = zabbix.change_to_itemid(eth_in_itemsid)
-
-        eth_out_itemsid = zabbix.get_host_itemsid(hostid, 'key_', 'net.if.out[e')
-        eth_out_itemsid = zabbix.change_to_itemid(eth_out_itemsid)
-
-        eth_in = zabbix.get_eth_history(eth_in_itemsid)
-        eth_out = zabbix.get_eth_history(eth_out_itemsid)
-
-        text = '''主机名：HOSTNAME;可用物理内存：MEMORY GB; CPU平均负载（1分钟 5分钟 15分钟）：CPU1% CPU5% CPU15%;可用磁盘空间：FDS;网络传输： 发送：ETHOUT Mbps 接收：ETHIN Mbps'''
-        text = text.replace('HOSTNAME',str(hostname))
-        text = text.replace('MEMORY', str(memory))
-        text = text.replace('CPU1', str(cpu1))
-        text = text.replace('CPU5', str(cpu5))
-        text = text.replace('CPU15', str(cpu15))
-        text = text.replace('FDS', str(free_disk_spaces))
-        text = text.replace('ETHOUT', str(eth_out))
-        text = text.replace('ETHIN', str(eth_in))
-
-        print(text)
-
-
-
-        # print("主机名："+str(hostname)+";可用物理内存："+str(memory)+
-        #       "GB;CPU平均负载（1分钟 5分钟 15分钟）："+str(cpu1)+"% "+str(cpu5)+"% "+str(cpu15)+
-        #       "%;可用磁盘空间："+str(free_disk_spaces)+
-        #       ";网络传输： 发送："+str(eth_out)+ "Mbps 接收："+str(eth_in)+"Mbps")
+    zabbix = CollectionZabbix(browser)
+    zabbix.openurl_and_login(url,username,password)
+    zabbix.get_latest_data()
+    browser.quit()
