@@ -46,7 +46,10 @@ class SendMail:
 
         self.add_attach_file = 0 #增加了多少个附件，这个属性如果为零，也是判断为不用发信
 
+        self.reset_count = False
+
         self.add_attach()
+
 
         # self.att1 = MIMEText(open('data/status.txt','rb').read(),'base64','utf-8')
         # attach_file = self.config.get('attach','attach1')
@@ -96,10 +99,6 @@ class SendMail:
         mtime = time.strftime('%Y%m%d', time.localtime(os.path.getmtime('count')))
         #获取当前时间
         ntime = time.strftime('%Y%m%d', time.localtime(time.time()))
-        #如果修改时间不是当天，内容归零，重新计数
-        if mtime != ntime:
-            with open('count', 'w') as f:
-                f.write('0')
 
         mtime2 = os.path.getmtime('count')#文件修改时间
         ntime2 = time.time()#现在时间
@@ -108,8 +107,14 @@ class SendMail:
             logging.info(time.strftime('%Y%m%d-%H:%M:%S', time.localtime(time.time())) + "  -->> 时间间隔未到，邮件不发送")
             return False
         else:
-            with open('count', 'r') as f:
-                num = f.read()
+            if mtime != ntime or self.reset_count:
+                # 如果修改时间不是当天，直接赋值为0，内容归零，重新计数
+                # 这个时候改写文件的话，会导致文件的修改时间被改变，结果是每天的第一次发信会变成间隔时间未到，无法发信
+                # 需要重新计数的条件等于true的时候，也是需要重设计数的值是0
+                num = 0
+            else:
+                with open('count', 'r') as f:
+                    num = f.read()
             if int(num) > int(self.config.get('mail', 'max_send')):
                 # 如果计数文件中的内容大于设定的次数，表示已经发送过设定的次数的邮件，返回不能发信的False
                 logging.info(time.strftime('%Y%m%d-%H:%M:%S', time.localtime(time.time())) +
@@ -166,8 +171,13 @@ class SendMail:
                         lines = attach_txt.readlines()
                         #如果文件中的内容多于两行，就是有异常内容，根据爬虫的写入内容，第一行为爬取的时间，
                         # 如果没有异常，就只有第二行写入无异常，如果有异常内容，文件内容将是大于两行。
-                        if len(lines) > 2 and self.file_diff(attach_file):
-                            print(self.file_diff(attach_file))
+                        if len(lines) > 2 :
+                            if self.file_diff(attach_file):
+                                # 如果隐患的内容有变化。重新计数
+                                self.reset_count = True
+                                # with open('count', 'w') as f:
+                                #     f.write('0')
+                            #print(self.file_diff(attach_file))
                             self.att1 = MIMEApplication(open(attach_file, 'rb').read())
                             self.att1['Content-Type'] = 'application/octet-stream'
                             self.att1['Content-Disposition'] = 'attachment;filename='+attach_filename
@@ -185,7 +195,6 @@ class SendMail:
         content = '<p>以下正文及附件为运行状态不良的各主机状态:<br /><br />'
         for i in range(1, attach_num + 1):
             attach_file = self.config.get('attach', 'attach' + str(i))
-            #filename = os.path.basename(attach_file)#提取文件名后面用于判断是否需要保存该文件的内容到临时文件
             if attach_file != '':
                 mtime = str(os.path.getmtime(attach_file))
                 new_mtime.append(mtime)
@@ -214,9 +223,11 @@ class SendMail:
             #打开临时文件
             with open('Sent_'+name, 'r', encoding='utf-8') as infile:
                 inall = infile.readlines()
-        except:
+        except FileNotFoundError:
+            #抛出文件没有找到异常，就将文件的内容赋值为空，这样就肯定可以得到文件内容有变化，在发信成功后就会添加这个临时文件
+            # 这个处理是方便添加新的附件或者附件的文件名改名，导致找不到保存上次信件内容的临时文件
             inall = []
-        # #打开需要校对和上传的文件
+        # 打开需要校对和上传的文件
         with open(filename, 'r', encoding='utf-8') as infile2:
             inall2 = infile2.readlines()
 
@@ -241,20 +252,36 @@ class SendMail:
             else:
                 t2.append(item)
 
-        #对比两个列表的不同项，保存为一个列表
         t3 = []
         for item in t:
-            if item not in t2:
-                t3.append(item)
-        #需要对比第二次，确保两个列表都没有内容才行
+            if type(item) == list:
+                for item2 in item:
+                    if '存在隐患' in item2:
+                        # print(item)
+                        t3.append(item)
         t4 = []
         for item in t2:
-            if item not in t:
-                t4.append(item)
+            if type(item) == list:
+                for item2 in item:
+                    if '存在隐患' in item2:
+                        # print(item)
+                        t4.append(item)
+
+
+        #对比两个列表的不同项，保存为一个列表
+        t5 = []
+        for item in t3:
+            if item not in t4:
+                t5.append(item)
+        #需要对比第二次，确保两个列表都没有内容才行
+        t6 = []
+        for item in t4:
+            if item not in t3:
+                t6.append(item)
         #两次的对比结果只要有一次有差异，就是两个文件其中一个有变化。
 
         #判断差异项的列表，没有内容，即没有差异项，即两个文件没有变化，存在差异项则有变化
-        if len(t3) == 0 and len(t4) == 0:
+        if len(t5) == 0 and len(t6) == 0:
             return False
         else:
             return True
