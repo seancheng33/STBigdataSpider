@@ -61,27 +61,31 @@ class SendMail:
         proxy_url = self.config.get('proxy', 'url')
         proxy_port = int(self.config.get('proxy', 'port'))  # 取出来的值是字符串，记得转成整数类型，不然会报错
 
-        if not self.can_send():
+        if self.can_send(): #能发信和文件有变动，才会执行发信的操作
+            if proxy_url != '' and proxy_port != '':
+                # 判断如果代理的地址和端口不为空，即有填写代理服务器的信息，需要使用代理，如果两项都为空即是不需要使用代理服务器
+                # 需要使用代理访问网络才可以发送邮件。
+                socks.setdefaultproxy(socks.PROXY_TYPE_HTTP, proxy_url, proxy_port)
+                socks.wrapmodule(smtplib)
+
+            try:
+                smtpObj = smtplib.SMTP(self.mail_host, 25)
+                # 登录邮箱
+                smtpObj.login(self.mail_user, self.mail_pass)
+                smtpObj.sendmail(self.sender, self.to_receivers + self.cc_receivers, self.message.as_string())
+                smtpObj.quit()  # 关闭连接
+                logging.info(time.strftime('%Y%m%d-%H:%M:%S', time.localtime(time.time())) + "  -->> 邮件发送成功")
+            except smtplib.SMTPException:
+                logging.error(
+                    time.strftime('%Y%m%d-%H:%M:%S', time.localtime(time.time())) + " -->> Error: 无法发送邮件" + str(
+                        smtplib.SMTPException))
+
+        else:
             logging.info(
                 time.strftime('%Y%m%d-%H:%M:%S', time.localtime(time.time())) +
                 "  -->> 时间或次数未达到发信条件，不发信，退出系统")
             sys.exit(0)
-        if proxy_url != '' and proxy_port != '':
-            # 判断如果代理的地址和端口不为空，即有填写代理服务器的信息，需要使用代理，如果两项都为空即是不需要使用代理服务器
-            # 需要使用代理访问网络才可以发送邮件。
-            socks.setdefaultproxy(socks.PROXY_TYPE_HTTP, proxy_url, proxy_port)
-            socks.wrapmodule(smtplib)
 
-        # 发送邮件，捕捉异常
-        try:
-            smtpObj = smtplib.SMTP(self.mail_host, 25)
-            # 登录邮箱
-            smtpObj.login(self.mail_user, self.mail_pass)
-            smtpObj.sendmail(self.sender, self.to_receivers + self.cc_receivers, self.message.as_string())
-            smtpObj.quit()  # 关闭连接
-            logging.info(time.strftime('%Y%m%d-%H:%M:%S', time.localtime(time.time())) + "  -->> 邮件发送成功")
-        except smtplib.SMTPException:
-            logging.error(time.strftime('%Y%m%d-%H:%M:%S', time.localtime(time.time())) + " -->> Error: 无法发送邮件"+str(smtplib.SMTPException))
 
     def can_send(self):
         #如果这次邮件需要添加的附件数为0，也就是说明全部的附件文件都是没有异常的文件，也就表示不用发信，返回不能发信的False
@@ -112,6 +116,23 @@ class SendMail:
                              "  -->> 当前发信次数"+num+"，已经达到每天邮件发送的最大次数，邮件不再发送")
                 return False
             else:
+                attach_num = int(self.config.get('attach', 'attach_num'))
+
+                #在这里将附件的内容写进临时文件
+                for i in range(1, attach_num + 1):
+                    attach_file = self.config.get('attach', 'attach' + str(i))
+                    filename = os.path.basename(attach_file)  # 提取文件名后面用于判断是否需要保存该文件的内容到临时文件
+
+                    if not self.file_diff(attach_file):
+                        continue
+                    else:
+                        with open(attach_file, 'r', encoding='utf-8') as attach_txt:
+                            lines = attach_txt.readlines()
+                        # 将列表中的内容写到一个临时文件中
+                        with open('Sent_' + filename.split('.')[0], 'w', encoding='utf-8') as w:
+                            for line in lines:
+                                w.write(line)
+
                 # 小于等于5，就是还在可以发信的范围，计数加1，次数写入文件中，返回可以发信的True
                 num = int(num) + 1
                 with open('count', 'w') as f:
@@ -143,10 +164,10 @@ class SendMail:
                 else:
                     with open(attach_file,'r',encoding='utf-8') as attach_txt:
                         lines = attach_txt.readlines()
-
                         #如果文件中的内容多于两行，就是有异常内容，根据爬虫的写入内容，第一行为爬取的时间，
                         # 如果没有异常，就只有第二行写入无异常，如果有异常内容，文件内容将是大于两行。
-                        if len(lines) > 2:
+                        if len(lines) > 2 and self.file_diff(attach_file):
+                            print(self.file_diff(attach_file))
                             self.att1 = MIMEApplication(open(attach_file, 'rb').read())
                             self.att1['Content-Type'] = 'application/octet-stream'
                             self.att1['Content-Disposition'] = 'attachment;filename='+attach_filename
@@ -158,14 +179,13 @@ class SendMail:
             ltimetxt.write(','.join(new_mtime))
 
     def read_to_content(self):
-        wline = [] #建立一个列表，将附件读行的内容写到列表，再写到文件
         last_time = self.get_attach_mtime()
         new_mtime = []
         attach_num = int(self.config.get('attach', 'attach_num'))
         content = '<p>以下正文及附件为运行状态不良的各主机状态:<br /><br />'
         for i in range(1, attach_num + 1):
             attach_file = self.config.get('attach', 'attach' + str(i))
-            filename = os.path.basename(attach_file)#提取文件名后面用于判断是否需要保存该文件的内容到临时文件
+            #filename = os.path.basename(attach_file)#提取文件名后面用于判断是否需要保存该文件的内容到临时文件
             if attach_file != '':
                 mtime = str(os.path.getmtime(attach_file))
                 new_mtime.append(mtime)
@@ -182,20 +202,62 @@ class SendMail:
                         lines = attach_txt.readlines()
                         for line in lines:
                             content = content + line + '<br />'
-                            if filename == 'status.txt':
-                                #
-                                wline.append(line)
                     content = content + '<br />'
-
-        #将列表中的内容写到一个临时文件中
-        with open('tmp','w',encoding='utf-8') as w:
-            for line in wline:
-                w.write(line)
 
         content = content + '<br /><br />本邮件内容由python脚本自动采集并发送。</p>'
         return content
 
+    def file_diff(self,filename):
+        #对比两个文件的差异，存在差异返回true，否则返回false
+        name = os.path.basename(filename).split('.')[0]
+        try:
+            #打开临时文件
+            with open('Sent_'+name, 'r', encoding='utf-8') as infile:
+                inall = infile.readlines()
+        except:
+            inall = []
+        # #打开需要校对和上传的文件
+        with open(filename, 'r', encoding='utf-8') as infile2:
+            inall2 = infile2.readlines()
 
+        #处理文件1的内容为一行为一项的列表
+        t = []
+        for item in inall[1:]:#第一行的时间这个内容不要检查
+            item = item.replace("\n", "")
+            if '#' in item:
+                item = item.split('#')
+                item.remove('')
+                t.append(item)
+            else:
+                t.append(item)
+        #处理文件2的内容为一行为一项的列表
+        t2 = []
+        for item in inall2[1:]:
+            item = item.replace("\n", "")
+            if '#' in item:
+                item = item.split('#')
+                item.remove('')
+                t2.append(item)
+            else:
+                t2.append(item)
+
+        #对比两个列表的不同项，保存为一个列表
+        t3 = []
+        for item in t:
+            if item not in t2:
+                t3.append(item)
+        #需要对比第二次，确保两个列表都没有内容才行
+        t4 = []
+        for item in t2:
+            if item not in t:
+                t4.append(item)
+        #两次的对比结果只要有一次有差异，就是两个文件其中一个有变化。
+
+        #判断差异项的列表，没有内容，即没有差异项，即两个文件没有变化，存在差异项则有变化
+        if len(t3) == 0 and len(t4) == 0:
+            return False
+        else:
+            return True
 
     def get_attach_mtime(self):
         #如果文件不存在，赋值最后修改时间为空，后面在添加了附件后，会创建该文件并写入内容
