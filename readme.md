@@ -1,24 +1,33 @@
-﻿自动化脚本获取CDH网站上主机运行状态并将其发送邮件到指定邮箱
-# 本版本为window版
+﻿自动化脚本获取CDH Zabbix网站上主机运行状态,将内容保存到文件中，并将其发送邮件到指定邮箱，或者通过配置上传文件到指定的ftp服务器中。
+#### 本版本为window版
 
-### 开发运行环境：
+# 开发运行环境：
 > python-3.6.2
+
 由于到目前为止，尚没有用到一些新的特性，原则上是，应用可以运行在3.X版本的python运行环境中，不过还是建议尽量在3.5.x及以上的运行环境
 
-### 所需用到的插件：
+# 所需用到的插件：
 > beautifulsoup4==4.6.0
+>
 > bs4==0.0.1
+>
 > configparser==3.5.0
+>
 > lxml==4.1.0
+>
 > PySocks==1.6.7
+>
 > selenium==3.6.0
+# 可用使用下面的命令批量安装模块：
 
-### 可用使用下面的命令批量安装模块：
-> pip install -r requests.txt
+```
+pip install -r requests.txt
+```
 
+# config.ini配置说明
+修改config.ini.backup为config.ini,然后请按实际部署的情况修改config.ini中的以下内容,详情请看manual.txt
 
-config.ini配置说明，修改config.ini.backup为config.ini,然后请按实际部署的情况修改config.ini中的以下内容,详情请看manual.txt
-
+# 更新历史
 * 2017-12-19：增加了对附件内容”存在隐患“的检索和比对的函数
 新增临时文件Sent_XXXXX用于存放上次发信时的附件内容
 增加了一个是否重置count计数的布尔值
