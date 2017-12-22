@@ -3,7 +3,6 @@ import selenium
 from bs4 import BeautifulSoup
 from selenium import webdriver
 
-
 class CollectionZabbix:
     def __init__(self, browser):
         self.browser = browser
@@ -41,7 +40,6 @@ class CollectionZabbix:
     def get_latest_data(self):
         self.browser.find_element_by_link_text('最新数据').click()
         time.sleep(5)
-        #self.browser.save_screenshot('1.png')
 
         data = self.browser.find_element_by_class_name('list-table')
         soup = BeautifulSoup(data.get_attribute('innerHTML'), 'lxml')
@@ -78,8 +76,9 @@ if __name__ == '__main__':
         browser = webdriver.PhantomJS(executable_path='../lib/phantomjs.exe', desired_capabilities=cap)
         #要设定浏览器的大小，不然被认为是收集的浏览页面大小，会后面报错找不到输入框。原因未知，待测试排查。
         browser.set_window_size(1366,768)
-
-    zabbix = CollectionZabbix(browser)
-    zabbix.openurl_and_login(url,username,password)
-    zabbix.get_latest_data()
-    browser.quit()
+    try:
+        zabbix = CollectionZabbix(browser)
+        zabbix.openurl_and_login(url,username,password)
+        zabbix.get_latest_data()
+    finally:
+        browser.quit()
