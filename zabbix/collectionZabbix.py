@@ -3,6 +3,7 @@ import selenium
 from bs4 import BeautifulSoup
 from selenium import webdriver
 
+
 class CollectionZabbix:
     def __init__(self, browser):
         self.browser = browser
@@ -45,24 +46,48 @@ class CollectionZabbix:
         soup = BeautifulSoup(data.get_attribute('innerHTML'), 'lxml')
         tr_list = soup.findAll('tr')
 
-        for line in tr_list:
+        all_list = []
+        for line in tr_list[1:]:
+            # 第一行的表头行不要
             ldata = line.findAll('td')
+
             if len(ldata) == 4:
+                # 该行是四列的话，是显示主机名和监控项目名的行，否则是显示项目详情的行
+                # print('--------')
+                host_name = []
                 for i in ldata:
                     if len(i.text) > 0:
-                        print('主机：',i.text.strip('\n'))
+                        host_name.append(i.text.strip('\n'))
+                all_list.append(host_name)
+                # print(tmp_dict)
             else:
+                # 遍历项目详情行，得到需要的内容
+                status_list = []
                 for i in ldata:
                     if len(i.text) > 0:
-                        print(i.text.strip('\n'))
-            print('-----------------')
+                        status_list.append(i.text.strip('\n'))
+                all_list.append(status_list)
+
+        # print(all_list)
+
+        num_list = []
+        num = 0
+        for item in all_list:
+            if len(item) == 2:
+                # 值的长度是2的，是显示主机名和项目名，将这些的项的位置取出
+                num_list.append(num)
+            num += 1
+
+        for i in num_list:
+            print(all_list[i])
+
 
 if __name__ == '__main__':
 
     config = configparser.ConfigParser()
     config_file = open("config.ini", 'r')
     config.read_file(config_file)
-    guibrowser = config.get('zabbix','guibrowser')
+    guibrowser = config.get('zabbix', 'guibrowser')
     url = config.get('zabbix', 'url')
     username = config.get('zabbix', 'username')
     password = config.get('zabbix', 'password')
@@ -74,11 +99,11 @@ if __name__ == '__main__':
         cap["phantomjs.page.settings.userAgent"] = (
             "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/61.0.3163.100 Safari/537.36")
         browser = webdriver.PhantomJS(executable_path='../lib/phantomjs.exe', desired_capabilities=cap)
-        #要设定浏览器的大小，不然被认为是收集的浏览页面大小，会后面报错找不到输入框。原因未知，待测试排查。
-        browser.set_window_size(1366,768)
+        # 要设定浏览器的大小，不然被认为是收集的浏览页面大小，会后面报错找不到输入框。原因未知，待测试排查。
+        browser.set_window_size(1366, 768)
     try:
         zabbix = CollectionZabbix(browser)
-        zabbix.openurl_and_login(url,username,password)
+        zabbix.openurl_and_login(url, username, password)
         zabbix.get_latest_data()
     finally:
         browser.quit()
