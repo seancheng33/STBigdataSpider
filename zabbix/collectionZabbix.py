@@ -50,36 +50,63 @@ class CollectionZabbix:
         for line in tr_list[1:]:
             # 第一行的表头行不要
             ldata = line.findAll('td')
-
+            status_list = []
             if len(ldata) == 4:
                 # 该行是四列的话，是显示主机名和监控项目名的行，否则是显示项目详情的行
-                # print('--------')
                 host_name = []
                 for i in ldata:
                     if len(i.text) > 0:
                         host_name.append(i.text.strip('\n'))
-                all_list.append(host_name)
-                # print(tmp_dict)
             else:
                 # 遍历项目详情行，得到需要的内容
                 status_list = []
                 for i in ldata:
                     if len(i.text) > 0:
                         status_list.append(i.text.strip('\n'))
-                all_list.append(status_list)
+            all_list.append(host_name + status_list)
 
-        # print(all_list)
-
-        num_list = []
-        num = 0
+        tmp_list = []
         for item in all_list:
             if len(item) == 2:
-                # 值的长度是2的，是显示主机名和项目名，将这些的项的位置取出
-                num_list.append(num)
-            num += 1
+                tmp_list.append(item[0])
 
-        for i in num_list:
-            print(all_list[i])
+        host_info = {}
+        for i in tmp_list:
+            tmp_l = []
+            for item in all_list:
+                if i in item:
+                    for j in self.check_data():
+                        if j in item[1]:
+                            in_value = item[2:-1]  # [:-1]去掉最后一个值，改值是‘图形’，不需要
+                            if len(in_value):  # in_value有值，就是返回True 就添加到列表中
+                                for k in self.check_content():
+                                    if k in in_value[0]:
+                                        tmp_l.append(in_value)
+            host_info[i] = tmp_l
+
+        for item in host_info:
+            name = item
+            print(name, ':')
+            name_list = host_info[item]
+            for i in name_list:
+                if len(i) == 4:
+                    del i[3]
+                if 'percentage' in i[0]:
+                    # 含percentage是百分比的，可以不要
+                    continue
+                if '/boot' in i[0]:
+                    # /boot的空间查看可以不要
+                    continue
+                del i[1]
+                print(i)
+
+    def check_data(self):
+        data = ['CPU', 'Filesystems', 'Memory', 'Network interfaces']
+        return data
+
+    def check_content(self):
+        data = ['Processor load', 'disk space', 'memory', 'Incoming', 'Outgoing']
+        return data
 
 
 if __name__ == '__main__':
