@@ -34,9 +34,9 @@ if __name__ == '__main__':
 
     #zabbix需要的状态字典
     info = {
-        'Processor load (1 min average per core)': '未知',
-        'Processor load (5 min average per core)': '未知',
-        'Processor load (15 min average per core)': '未知',
+        'Processor load (1 min average per core)': 'CPU负载（1分钟）',
+        'Processor load (5 min average per core)': 'CPU负载（5分钟）',
+        'Processor load (15 min average per core)': 'CPU负载（15分钟）',
         'Free disk space on': '可用磁盘空间',
         'Total disk space on': '总磁盘空间',
         'Used disk space on': '已用磁盘空间',
@@ -63,4 +63,4 @@ if __name__ == '__main__':
 
     pu = Pickle_Util()
     pu.dump_data(info)
-    print(pu.load_data('zabbixdata.pkl').get('Available memory'))
+    print(pu.load_data('zabbixdata.pkl').get('Processor load (1 min average per core)'))

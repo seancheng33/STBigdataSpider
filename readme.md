@@ -29,6 +29,7 @@ pip install -r requests.txt
 修改config.ini.backup为config.ini,然后请按实际部署的情况修改config.ini中的以下内容,详情请看manual.txt
 
 ### 更新历史
+* 2017-12-27：;
 * 2017-12-19：增加了对附件内容”存在隐患“的检索和比对的函数;
 新增临时文件Sent_XXXXX用于存放上次发信时的附件内容;
 增加了一个是否重置count计数的布尔值;
