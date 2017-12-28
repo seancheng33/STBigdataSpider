@@ -39,6 +39,7 @@ class CollectionZabbix:
 
     def get_warning_data(self):
         self.browser.find_element_by_link_text('问题').click()
+        logging.info(time.strftime('%Y%m%d-%H:%M:%S', time.localtime(time.time())) + ' -->> 打开问题页面成功。')
         time.sleep(5)
 
         data = self.browser.find_element_by_class_name('list-table')
@@ -54,7 +55,7 @@ class CollectionZabbix:
                 if len(item.text) > 0:
                     status_list.append(item.text.strip('\n'))
             all_list.append(status_list)
-
+        logging.info(time.strftime('%Y%m%d-%H:%M:%S', time.localtime(time.time())) + ' -->> 获取问题数据完成。')
         # 定义这个字典的意义在于，将告警的等级数字化，判断当高于某个等级的内容，会被列出
         # 这样的好处在于，可以不用去遍历多个内容，只需给定一个级别，只要是高于这个级别的数字，就符合条件
         warning_level = {'信息': 0, '警告': 1, '一般严重': 2, '严重': 3, '灾难': 4}
@@ -75,9 +76,11 @@ class CollectionZabbix:
                     file.write(str(item) + '\n')
             else:
                 file.write('没有达到或高于设定级别的告警主机')
+        logging.info(time.strftime('%Y%m%d-%H:%M:%S', time.localtime(time.time())) + ' -->> 问题数据写入文件完成。')
 
     def get_latest_data(self):
         self.browser.find_element_by_link_text('最新数据').click()
+        logging.info(time.strftime('%Y%m%d-%H:%M:%S', time.localtime(time.time())) + ' -->> 打开最新数据页面成功。')
         time.sleep(5)
 
         data = self.browser.find_element_by_class_name('list-table')
@@ -104,7 +107,7 @@ class CollectionZabbix:
             all_list.append(host_name + status_list)
 
         data_list = self.data_clean(all_list)
-
+        logging.info(time.strftime('%Y%m%d-%H:%M:%S', time.localtime(time.time())) + ' -->> 获取最新数据完成。')
         return data_list
 
     def data_clean(self, data_list):
@@ -128,7 +131,7 @@ class CollectionZabbix:
                                     if k in in_value[0]:
                                         tmp_l.append(in_value)
             host_info[i] = tmp_l
-
+        logging.info(time.strftime('%Y%m%d-%H:%M:%S', time.localtime(time.time())) + ' -->> 数据重新处理完成。')
         return host_info
 
     def write_to_file(self, host_info):
@@ -167,6 +170,7 @@ class CollectionZabbix:
             for item in info_list:
                 file.write(item + '\n')
         # print(info_list)
+        logging.info(time.strftime('%Y%m%d-%H:%M:%S', time.localtime(time.time())) + ' -->> 最新数据写入文件完成。')
 
     def check_data(self):
         data = ['CPU', 'Filesystems', 'Memory', 'Network interfaces']
