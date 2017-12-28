@@ -1,8 +1,8 @@
-import configparser, logging, time
-import selenium
+import configparser, logging, time, selenium
 from bs4 import BeautifulSoup
 from selenium import webdriver
 from util.pickle_util import Pickle_Util
+
 
 class CollectionZabbix:
     def __init__(self, browser):
@@ -51,18 +51,30 @@ class CollectionZabbix:
             ldata = line.findAll('td')
             status_list = []
             for item in ldata:
-                if len(item.text)>0:
+                if len(item.text) > 0:
                     status_list.append(item.text.strip('\n'))
             all_list.append(status_list)
 
         # 定义这个字典的意义在于，将告警的等级数字化，判断当高于某个等级的内容，会被列出
         # 这样的好处在于，可以不用去遍历多个内容，只需给定一个级别，只要是高于这个级别的数字，就符合条件
-        warning_level={'信息':0,'警告':1,'一般严重':2,'严重':3,'灾难':4}
+        warning_level = {'信息': 0, '警告': 1, '一般严重': 2, '严重': 3, '灾难': 4}
 
+        warning_list = []
         for item in all_list:
-            if warning_level[item[1]] >= 3 :
-                print(item)
-        #print(all_list)
+            level = int(self.config.get('zabbix', 'level'))
+            if warning_level[item[1]] >= level:
+                warning = '主机：'+item[3]+'\t 严重性：'+item[1]+'\t 问题：'+item[4]
+                warning_list.append(warning)
+        # print(all_list)
+
+        with open('../data/zabbixwarning.txt', 'w', encoding='utf-8') as file:
+            file.write('数据采集时间：' + time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(time.time())) + '\n')
+            if len(warning_list) > 0:
+                file.write('以下为达到或高于设定级别的告警主机信息，共 '+str(len(warning_list))+' 台'+ '\n')
+                for item in warning_list:
+                    file.write(str(item) + '\n')
+            else:
+                file.write('没有达到或高于设定级别的告警主机')
 
     def get_latest_data(self):
         self.browser.find_element_by_link_text('最新数据').click()
@@ -95,8 +107,8 @@ class CollectionZabbix:
 
         return data_list
 
-    def data_clean(self,data_list):
-        #清理数据，去掉不要的数据
+    def data_clean(self, data_list):
+        # 清理数据，去掉不要的数据
         host_info = {}
 
         tmp_list = []
@@ -119,15 +131,15 @@ class CollectionZabbix:
 
         return host_info
 
-    def write_to_file(self,host_info):
+    def write_to_file(self, host_info):
         info_list = []
         for item in host_info:
             name = item
-            info_list.append(str(name)+':')
+            info_list.append(str(name) + ':')
             name_list = host_info[item]
             for i in name_list:
                 if len(i) == 4:
-                    del i[3] #如果是有4个数据，最后一个是比上次查询时的更改，可以不要
+                    del i[3]  # 如果是有4个数据，最后一个是比上次查询时的更改，可以不要
                 if 'percentage' in i[0]:
                     # 含percentage是百分比的，可以不要
                     continue
@@ -141,19 +153,20 @@ class CollectionZabbix:
                     # vmnet的网络传输查看可以不要
                     continue
 
-                del i[1] #第二个数据是获取数据的时间，可以不要
-                pu =Pickle_Util()
+                del i[1]  # 第二个数据是获取数据的时间，可以不要
+                pu = Pickle_Util()
                 zabbixdata = pu.load_data('zabbixdata.pkl')
                 if '/' in i[0]:
-                    #Free disk space on / 这个是关于磁盘空间的，分隔是为了获取不同的分区空间的名称去对应项
+                    # Free disk space on / 这个是关于磁盘空间的，分隔是为了获取不同的分区空间的名称去对应项
                     sname = i[0].split(' ')
-                    info_list.append(zabbixdata[' '.join(sname[:-1])]+sname[-1]+':'+str(i[1]))
+                    info_list.append(zabbixdata[' '.join(sname[:-1])] + sname[-1] + ':' + str(i[1]))
                 else:
-                    info_list.append(zabbixdata[i[0]]+':'+str(i[1]))
-        with open('../data/zabbixstatus.txt','w',encoding='utf-8') as file:
+                    info_list.append(zabbixdata[i[0]] + ':' + str(i[1]))
+        with open('../data/zabbixstatus.txt', 'w', encoding='utf-8') as file:
+            file.write('数据采集时间：' + time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(time.time())) + '\n')
             for item in info_list:
-                file.write(item+'\n')
-        #print(info_list)
+                file.write(item + '\n')
+        # print(info_list)
 
     def check_data(self):
         data = ['CPU', 'Filesystems', 'Memory', 'Network interfaces']
@@ -186,8 +199,8 @@ if __name__ == '__main__':
     try:
         zabbix = CollectionZabbix(browser)
         zabbix.openurl_and_login(url, username, password)
-        #data_list = zabbix.get_latest_data()
-        #zabbix.write_to_file(data_list)
+        data_list = zabbix.get_latest_data()
+        zabbix.write_to_file(data_list)
         zabbix.get_warning_data()
     finally:
         browser.quit()
