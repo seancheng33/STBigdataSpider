@@ -4,9 +4,11 @@ import time
 
 import os, shutil
 import selenium
+import sys
 from bs4 import BeautifulSoup
 from selenium import webdriver
 
+sys.path.append('..')
 from util.pickle_util import Pickle_Util
 
 
@@ -114,7 +116,7 @@ class Collection:
                                 # 组成有一个字典字段
                                 # tmpDict = {'status': stat[2], 'type': type, 'name': name}
 
-                                #tmpDict = {'运行状态': self.status_name(stat[2]), '角色类型': type, '主机名': name}
+                                # tmpDict = {'运行状态': self.status_name(stat[2]), '角色类型': type, '主机名': name}
                                 status_name = Pickle_Util().load_data('status.pkl')
                                 tmpDict = {'运行状态': self.status_name(stat[2]), '角色类型': type, '主机名': name}
                                 #
