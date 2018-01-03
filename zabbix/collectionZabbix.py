@@ -2,6 +2,14 @@ import configparser, logging, time
 import selenium
 from bs4 import BeautifulSoup
 from selenium import webdriver
+import configparser, logging, time, selenium
+
+import sys
+from bs4 import BeautifulSoup
+from selenium import webdriver
+sys.path.append('..')
+from util.pickle_util import Pickle_Util
+
 
 
 class CollectionZabbix:
