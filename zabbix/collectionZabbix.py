@@ -1,6 +1,7 @@
-import configparser, logging, time, selenium
+import configparser, logging, time, selenium , sys
 from bs4 import BeautifulSoup
 from selenium import webdriver
+sys.path.append('..')
 from util.pickle_util import Pickle_Util
 
 
