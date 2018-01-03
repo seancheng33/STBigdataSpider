@@ -1,5 +1,7 @@
 [zabbix]
-server_ip =
 username =
 password =
 group_name =
+url =
+level =
+guibrowser =

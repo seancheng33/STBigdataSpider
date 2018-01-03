@@ -45,12 +45,9 @@ class SendMail:
         self.message.attach(self.mail_content)
 
         self.add_attach_file = 0 #增加了多少个附件，这个属性如果为零，也是判断为不用发信
-
-        self.reset_count = False
+        self.reset_count = False #需要重新计数的布尔值
 
         self.add_attach()
-
-
         # self.att1 = MIMEText(open('data/status.txt','rb').read(),'base64','utf-8')
         # attach_file = self.config.get('attach','attach1')
         # if attach_file != '':
@@ -78,10 +75,10 @@ class SendMail:
                 smtpObj.sendmail(self.sender, self.to_receivers + self.cc_receivers, self.message.as_string())
                 smtpObj.quit()  # 关闭连接
                 logging.info(time.strftime('%Y%m%d-%H:%M:%S', time.localtime(time.time())) + "  -->> 邮件发送成功")
-            except smtplib.SMTPException:
+            except smtplib.SMTPException as error:
                 logging.error(
                     time.strftime('%Y%m%d-%H:%M:%S', time.localtime(time.time())) + " -->> Error: 无法发送邮件" + str(
-                        smtplib.SMTPException))
+                        error))
 
         else:
             logging.info(
@@ -171,12 +168,9 @@ class SendMail:
                         lines = attach_txt.readlines()
                         #如果文件中的内容多于两行，就是有异常内容，根据爬虫的写入内容，第一行为爬取的时间，
                         # 如果没有异常，就只有第二行写入无异常，如果有异常内容，文件内容将是大于两行。
-                        if len(lines) > 2 :
-                            if self.file_diff(attach_file):
-                                # 如果隐患的内容有变化。重新计数
-                                self.reset_count = True
-                                # with open('count', 'w') as f:
-                                #     f.write('0')
+                        if len(lines) > 2 and self.file_diff(attach_file):
+                            # 如果隐患的内容有变化。重新计数
+                            # self.reset_count = True
                             #print(self.file_diff(attach_file))
                             self.att1 = MIMEApplication(open(attach_file, 'rb').read())
                             self.att1['Content-Type'] = 'application/octet-stream'
@@ -232,58 +226,75 @@ class SendMail:
             inall2 = infile2.readlines()
 
         #处理文件1的内容为一行为一项的列表
-        t = []
+        file1_list = []
         for item in inall[1:]:#第一行的时间这个内容不要检查
             item = item.replace("\n", "")
             if '#' in item:
+                # 存在#的行数，是各主机状态的行，按照#分成3段内容的一个列表
                 item = item.split('#')
                 item.remove('')
-                t.append(item)
+                file1_list.append(item)
             else:
-                t.append(item)
+                file1_list.append(item)
         #处理文件2的内容为一行为一项的列表
-        t2 = []
+        file2_list = []
         for item in inall2[1:]:
             item = item.replace("\n", "")
             if '#' in item:
+                #存在#的行数，是各主机状态的行，按照#分成3段内容的一个列表
                 item = item.split('#')
                 item.remove('')
-                t2.append(item)
+                file2_list.append(item)
             else:
-                t2.append(item)
+                file2_list.append(item)
 
-        t3 = []
-        for item in t:
-            if type(item) == list:
+        file1_yellow = []#存放‘存在隐患’的内容
+        file1_other = []#存放其他的内容
+        for item in file1_list:
+            if type(item) == list:#值
                 for item2 in item:
                     if '存在隐患' in item2:
-                        # print(item)
-                        t3.append(item)
-        t4 = []
-        for item in t2:
+                        file1_yellow.append(item)
+                        break
+                    else:
+                        file1_other.append(item)
+                        break
+
+        file2_yellow = []#存放‘存在隐患’的内容
+        file2_other = []#存放其他的内容
+        for item in file2_list:
             if type(item) == list:
                 for item2 in item:
+                    #将‘存在隐患’的内容存放到一个列表中，其他的内容存放到另外一个表
                     if '存在隐患' in item2:
-                        # print(item)
-                        t4.append(item)
+                        file2_yellow.append(item)
+                        break
+                    else:
+                        file2_other.append(item)
+                        break
 
+        #对比两个存放‘存在隐患’内容列表的不同项，保存为一个列表
+        result1 = []
+        for item in file1_yellow:
+            if item not in file2_yellow:
+                result1.append(item)
+        #需要对比第二次，确保两个存放‘存在隐患’内容列表都没有内容不同
+        result2 = []
+        for item in file2_yellow:
+            if item not in file1_yellow:
+                result2.append(item)
 
-        #对比两个列表的不同项，保存为一个列表
-        t5 = []
-        for item in t3:
-            if item not in t4:
-                t5.append(item)
-        #需要对比第二次，确保两个列表都没有内容才行
-        t6 = []
-        for item in t4:
-            if item not in t3:
-                t6.append(item)
-        #两次的对比结果只要有一次有差异，就是两个文件其中一个有变化。
-
-        #判断差异项的列表，没有内容，即没有差异项，即两个文件没有变化，存在差异项则有变化
-        if len(t5) == 0 and len(t6) == 0:
+        if len(file2_other) == 0 and len(result1) == 0 and len(result2) == 0:
+            # 文件2也就是需要添加为附件的文件中，如果存在有其它的状态信息
+            # 按照目前的设置，就是说明有比‘存在隐患’更加严重的告警，需要立刻发信
+            # 所以只有这个项为空，也是没有异常的一个条件
+            # 两次的对比结果只要有一次有差异，就是两个文件其中一个有变化。
+            # 判断差异项的列表，没有内容，即没有差异项，即两个文件没有变化，存在差异项则有变化
             return False
         else:
+            if len(result1) or len(result2):
+                #两个结果列表只要有之，就重置计数
+                self.reset_count = True
             return True
 
     def get_attach_mtime(self):
