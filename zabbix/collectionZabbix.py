@@ -1,7 +1,7 @@
 import configparser, logging, time, selenium , sys
 from bs4 import BeautifulSoup
 from selenium import webdriver
-sys.path.append('..')
+sys.path.append('..')       # 将项目根目录添加进来。方便下面的引用
 from util.pickle_util import Pickle_Util
 
 
@@ -143,7 +143,7 @@ class CollectionZabbix:
             name_list = host_info[item]
             for i in name_list:
                 if len(i) == 4:
-                    del i[3]  # 如果是有4个数据，最后一个是比上次查询时的更改，可以不要
+                    del i[3]  # 如果是有4个数据，最后一个是比对上次查询时的数据更改，可以不要
                 if 'percentage' in i[0]:
                     # 含percentage是百分比的，可以不要
                     continue
