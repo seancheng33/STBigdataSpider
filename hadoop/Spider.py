@@ -1,7 +1,6 @@
 import configparser, logging, sys, time
 import urllib
 
-import selenium
 from selenium import webdriver
 from hadoop.collection import Collection
 from hadoop.collectionCDH import CollectionCDH
@@ -37,11 +36,10 @@ else:
 try:
     spiderbrowser = Collection(browser)
     spiderbrowser2 = CollectionCDH(browser)
-
+    #获取需要访问的页面状态码
     status_code = urllib.request.urlopen(url).code
-
+    # 如果状态码为200，执行下来内容，其实只要获取的状态码不是200，就会抛urllib.error.HTTPError异常，这个判断，应该可以不要，有待验证
     if status_code==200:
-        #如果状态码为200，执行下来内容，其实只要获取的状态码不是200，就会抛异常，这个判断，应该可以不要，有待验证
         spiderbrowser.openurl_and_login(url, username, password)
         statusDict = spiderbrowser.getHomeStatus()
         home_info = spiderbrowser2.home_info()
@@ -55,7 +53,7 @@ try:
         logging.info(time.strftime('%Y%m%d-%H:%M:%S', time.localtime(time.time())) + ' -->> 进入数据写入文件流程')
         spiderbrowser2.writer_to_file(context)
         logging.info(time.strftime('%Y%m%d-%H:%M:%S', time.localtime(time.time())) + ' -->> CDH主机运行信息数据写入文件流程')
-        # 需要发信的同时才将数据写到文件中
+        # 将数据写到文件中
         spiderbrowser.status_writer_to_file(statusList)
         logging.info(time.strftime('%Y%m%d-%H:%M:%S', time.localtime(time.time())) + ' -->> CDH异常状态数据写入文件流程')
     else:
@@ -69,7 +67,18 @@ try:
                               }]
                         }
         spiderbrowser.status_writer_to_file(error_status)
-        sys.exit(0)
+except urllib.error.HTTPError:
+    # 非200状态码抛出的异常
+    logging.error(time.strftime('%Y%m%d-%H:%M:%S', time.localtime(time.time())) +
+                  ' -->> 打开页面时发生错误，请确保与目的主机的网络通畅，确保web服务是否可以正常访问')
+    # 形成不能访问页面的状态词典，状态设定为立即发信的存在隐患的状况级别，方便后面的发信程序调用该附件时，判断为需要立即发信的级别。
+    error_status = {'web访问错误告警':
+                        [{'运行状态': '存在隐患的运行状况',
+                          '事件类型': 'web页面连接超时，无法访问',
+                          '建议': '请确保与目的主机的网络通畅，确保web服务是否可以正常访问'
+                          }]
+                    }
+    spiderbrowser.status_writer_to_file(error_status)
 except urllib.error.URLError:
     #服务器IP或网站一类抛出的异常
         logging.error(time.strftime('%Y%m%d-%H:%M:%S', time.localtime(time.time())) +
