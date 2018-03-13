@@ -26,10 +26,10 @@ class Collection:
         try:
             self.login_to(username, password)
         except selenium.common.exceptions.NoSuchElementException:
-            # 如果报错说没有找到页面元素，刷新浏览器后再重新执行登陆
             logging.warning(time.strftime('%Y%m%d-%H:%M:%S', time.localtime(time.time())) + ' -->> 页面获取元素失败，刷新页面。')
             self.browser.refresh()
             self.login_to(username, password)
+
 
         logging.info(time.strftime('%Y%m%d-%H:%M:%S', time.localtime(time.time())) + ' -->> 登陆成功。')
         # 停3秒，让页面可以读取数据完整
@@ -41,6 +41,7 @@ class Collection:
         self.browser.find_element_by_id("username").send_keys(username)
         self.browser.find_element_by_id("password").send_keys(password)
         self.browser.find_element_by_name("submit").click()
+
 
     def getHomeStatus(self):
         # 获取状态的图标和项目名
