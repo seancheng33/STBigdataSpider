@@ -1,4 +1,6 @@
 import configparser, logging, time, selenium , sys
+import urllib
+
 from bs4 import BeautifulSoup
 from selenium import webdriver
 sys.path.append('..')       # 将项目根目录添加进来。方便下面的引用
@@ -201,11 +203,20 @@ if __name__ == '__main__':
         browser = webdriver.PhantomJS(executable_path='../lib/phantomjs.exe', desired_capabilities=cap)
         # 要设定浏览器的大小，不然被认为是收集的浏览页面大小，会后面报错找不到输入框。原因未知，待测试排查。
         browser.set_window_size(1366, 768)
+
     try:
         zabbix = CollectionZabbix(browser)
-        zabbix.openurl_and_login(url, username, password)
-        data_list = zabbix.get_latest_data()
-        zabbix.write_to_file(data_list)
-        zabbix.get_warning_data()
+        status_code = urllib.request.urlopen(url).code
+        # status_code = 200
+        if status_code == 200:
+            zabbix.openurl_and_login(url, username, password)
+            data_list = zabbix.get_latest_data()
+            zabbix.write_to_file(data_list)
+            zabbix.get_warning_data()
+        else:
+            print("状态码错误")
+    except urllib.error.URLError:
+        print("网络错误")
     finally:
         browser.quit()
+        sys.exit(0)
