@@ -1,5 +1,4 @@
-import configparser, logging, sys, time
-import urllib
+import configparser, logging, sys, time,urllib
 
 from selenium import webdriver
 from hadoop.collection import Collection
